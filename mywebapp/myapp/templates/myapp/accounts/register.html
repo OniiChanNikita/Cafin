@@ -1,4 +1,4 @@
-{% extends 'layouts/base-fullscreen.html' %}
+{% extends 'myapp/layouts/base-fullscreen.html' %}
 
 {% block title %} Register {% endblock title %}
 
@@ -6,7 +6,12 @@
 {% block stylesheets %}{% endblock stylesheets %}
 
 {% block content %}
-
+    <style type="text/css">
+      #id_username_form, #id_password_form, #id_confirm_password_form, #id_email_form{
+        border: none;
+        background-color: transparent;
+      }
+    </style>
     <!-- Page content -->
     <div class="container mt--8 pb-5">
       <!-- Table -->
@@ -20,66 +25,62 @@
               </div>
             </div>
             <div class="card-body px-lg-5 py-lg-5">
-              <div class="text-center text-muted mb-4">
 
-                {% if msg %}
-                  <small>{{ msg | safe }}</small>
-                {% else %}
-                  Add your credentials
-                {% endif %}  
-              
-              </div>
-
-              {% if not success %}
 
                 <form method="POST">
 
                   {% csrf_token %}
-            
+
+                  {% for i in register_form %}
+                  {% if i.label == 'username' %}
                   <div class="form-group">
                     <div class="input-group input-group-alternative mb-3">
                       <div class="input-group-prepend">
                         <span class="input-group-text"><i class="ni ni-hat-3"></i></span>
                       </div>
-                      {{ form.username }}
+                      {{ i }}
                     </div>
                   </div>
-                  <span class="text-error">{{ form.username.errors }}</span>
-
+                  <span class="text-error">{{ register_form.username.errors }}</span>
+                  {% endif %}
+                  {% if i.label == 'email' %}
                   <div class="form-group">
                     <div class="input-group input-group-alternative mb-3">
                       <div class="input-group-prepend">
                         <span class="input-group-text"><i class="ni ni-email-83"></i></span>
                       </div>
-                      {{ form.email }}
+                      {{ i }}
                     </div>
                   </div>
-                  <span class="text-error">{{ form.email.errors }}</span>
-
+                  <span class="text-error">{{ register_form.email.errors }}</span>
+                  {% endif %}
+                  {% if i.label == 'password' %}
                   <div class="form-group">
                     <div class="input-group input-group-alternative">
                       <div class="input-group-prepend">
                         <span class="input-group-text"><i class="ni ni-lock-circle-open"></i></span>
                       </div>
-                      {{ form.password1 }}
+                      {{ i }}
                     </div>
                   </div>
-                  <span class="text-error">{{ form.password1.errors }}</span>
-
+                  <span class="text-error">{{ register_form.password1.errors }}</span>
+                  {% endif %}
+                  {% if i.label == 'confirm_password' %}
                   <div class="form-group">
                     <div class="input-group input-group-alternative">
                       <div class="input-group-prepend">
                         <span class="input-group-text"><i class="ni ni-lock-circle-open"></i></span>
                       </div>
-                      {{ form.password2 }}
+                      {{ i }}
                     </div>
                   </div>
-                  <span class="text-error">{{ form.password2.errors }}</span>
-
+                  <span class="text-error">{{ register_form.password2.errors }}</span>
+                  {% endif %}
+                  {% endfor %}
                   <div class="row my-4">
                     <div class="col-12">
                       <div class="custom-control custom-control-alternative custom-checkbox">
-                        <input class="custom-control-input" id="customCheckRegister" type="checkbox">
+                        <input class="custom-control-input" required id="customCheckRegister" type="checkbox">
                         <label class="custom-control-label" for="customCheckRegister">
                           <span class="text-muted">I agree with the <a href="#!">Privacy Policy</a></span>
                         </label>
@@ -91,7 +92,6 @@
                   </div>
                 </form>
 
-              {% endif %}  
   
             </div>
           </div>

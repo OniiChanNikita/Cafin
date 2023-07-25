@@ -19,7 +19,7 @@
         <link href="https://cdnjs.cloudflare.com/ajax/libs/SimpleLightbox/2.1.0/simpleLightbox.min.css" rel="stylesheet" />
 
         <!-- Core theme CSS (includes Bootstrap)-->
-        <link href="{% static 'myapp/css/styles.css' %}" rel="stylesheet" />
+        <link href="{% static 'myapp/index_temp/css/styles.css' %}" rel="stylesheet" />
         <style type="text/css">
             
             .shadow_masthead{
@@ -69,9 +69,8 @@
                 <button class="navbar-toggler navbar-toggler-right" type="button" data-bs-toggle="collapse" data-bs-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
                 <div class="collapse navbar-collapse" id="navbarResponsive">
                     <ul class="navbar-nav ms-auto my-2 my-lg-0">
-                        <li class="nav-item"><a class="nav-link" href="#about">About</a></li>
-                        <li class="nav-item"><a class="nav-link" href="#services">Services</a></li>
-                        <li class="nav-item"><a class="nav-link" href="#portfolio">Portfolio</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'login' %}">Sign in</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'register' %}">Sign up</a></li>
                         <li class="nav-item"><a class="nav-link" href="#contact">Contact</a></li>
                     </ul>
                 </div>
@@ -101,7 +100,7 @@
                         <h2 class="text-white mt-0">We've got what you need!</h2>
                         <hr class="divider divider-light" />
                         <p class="text-white-75 mb-4">We give you all the tools you need to record your finances and calculate them </p>
-                        <a class="btn btn-light btn-xl" href="#services">Get Started!</a>
+                        <a class="btn btn-light btn-xl" href="{% url 'register' %}">Get Started!</a>
                     </div>
                 </div>
             </div>
@@ -148,8 +147,8 @@
             <div class="container-fluid p-0">
                 <div class="row g-0">
                     <div class="col-lg-4 col-sm-6">
-                        <a class="portfolio-box" href="{% static 'myapp/assets/img/portfolio/fullsize/1.jpg' %}" title="Project Name">
-                            <img class="img-fluid" src="{% static 'myapp/assets/img/portfolio/thumbnails/1.jpg' %}" alt="..." />
+                        <a class="portfolio-box" href="{% static 'myapp/index_temp/assets/img/portfolio/fullsize/1.jpg' %}" title="Project Name">
+                            <img class="img-fluid" src="{% static 'myapp/index_temp/assets/img/portfolio/thumbnails/1.jpg' %}" alt="..." />
                             <div class="portfolio-box-caption">
                                 <div class="project-category text-white-50">Category</div>
                                 <div class="project-name">Project Name</div>
@@ -157,8 +156,8 @@
                         </a>
                     </div>
                     <div class="col-lg-4 col-sm-6">
-                        <a class="portfolio-box" href="{% static 'myapp/assets/img/portfolio/fullsize/2.jpg' %}" title="Project Name">
-                            <img class="img-fluid" src="{% static 'myapp/assets/img/portfolio/thumbnails/2.jpg' %}" alt="..." />
+                        <a class="portfolio-box" href="{% static 'myapp/index_temp/assets/img/portfolio/fullsize/2.jpg' %}" title="Project Name">
+                            <img class="img-fluid" src="{% static 'myapp/index_temp/assets/img/portfolio/thumbnails/2.jpg' %}" alt="..." />
                             <div class="portfolio-box-caption">
                                 <div class="project-category text-white-50">Category</div>
                                 <div class="project-name">Project Name</div>
@@ -166,8 +165,8 @@
                         </a>
                     </div>
                     <div class="col-lg-4 col-sm-6">
-                        <a class="portfolio-box" href="{% static 'myapp/assets/img/portfolio/fullsize/3.jpg' %}" title="Project Name">
-                            <img class="img-fluid" src="{% static 'myapp/assets/img/portfolio/thumbnails/3.jpg' %}" alt="..." />
+                        <a class="portfolio-box" href="{% static 'myapp/index_temp/assets/img/portfolio/fullsize/3.jpg' %}" title="Project Name">
+                            <img class="img-fluid" src="{% static 'myapp/index_temp/assets/img/portfolio/thumbnails/3.jpg' %}" alt="..." />
                             <div class="portfolio-box-caption">
                                 <div class="project-category text-white-50">Category</div>
                                 <div class="project-name">Project Name</div>
@@ -175,8 +174,8 @@
                         </a>
                     </div>
                     <div class="col-lg-4 col-sm-6">
-                        <a class="portfolio-box" href="{% static 'myapp/assets/img/portfolio/fullsize/4.jpg' %}" title="Project Name">
-                            <img class="img-fluid" src="{% static 'myapp/assets/img/portfolio/thumbnails/4.jpg' %}" alt="..." />
+                        <a class="portfolio-box" href="{% static 'myapp/index_temp/assets/img/portfolio/fullsize/4.jpg' %}" title="Project Name">
+                            <img class="img-fluid" src="{% static 'myapp/index_temp/assets/img/portfolio/thumbnails/4.jpg' %}" alt="..." />
                             <div class="portfolio-box-caption">
                                 <div class="project-category text-white-50">Category</div>
                                 <div class="project-name">Project Name</div>
@@ -184,8 +183,8 @@
                         </a>
                     </div>
                     <div class="col-lg-4 col-sm-6">
-                        <a class="portfolio-box" href="{% static 'myapp/assets/img/portfolio/fullsize/5.jpg' %}" title="Project Name">
-                            <img class="img-fluid" src="{% static 'myapp/assets/img/portfolio/thumbnails/5.jpg' %}" alt="..." />
+                        <a class="portfolio-box" href="{% static 'myapp/index_temp/assets/img/portfolio/fullsize/5.jpg' %}" title="Project Name">
+                            <img class="img-fluid" src="{% static 'myapp/index_temp/assets/img/portfolio/thumbnails/5.jpg' %}" alt="..." />
                             <div class="portfolio-box-caption">
                                 <div class="project-category text-white-50">Category</div>
                                 <div class="project-name">Project Name</div>
@@ -193,8 +192,8 @@
                         </a>
                     </div>
                     <div class="col-lg-4 col-sm-6">
-                        <a class="portfolio-box" href="{% static 'myapp/assets/img/portfolio/fullsize/6.jpg' %}" title="Project Name">
-                            <img class="img-fluid" src="{% static 'myapp/assets/img/portfolio/thumbnails/6.jpg' %}" alt="..." />
+                        <a class="portfolio-box" href="{% static 'myapp/index_temp/assets/img/portfolio/fullsize/6.jpg' %}" title="Project Name">
+                            <img class="img-fluid" src="{% static 'myapp/index_temp/assets/img/portfolio/thumbnails/6.jpg' %}" alt="..." />
                             <div class="portfolio-box-caption p-3">
                                 <div class="project-category text-white-50">Category</div>
                                 <div class="project-name">Project Name</div>
@@ -222,7 +221,7 @@
         <!-- SimpleLightbox plugin JS-->
         <script src="https://cdnjs.cloudflare.com/ajax/libs/SimpleLightbox/2.1.0/simpleLightbox.min.js"></script>
         <!-- Core theme JS-->
-        <script src="{% static 'myapp/js/scripts.js' %}"></script>
+        <script src="{% static 'myapp/index_temp/js/scripts.js' %}"></script>
         <!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *-->
         <!-- * *                               SB Forms JS                               * *-->
         <!-- * * Activate your form at https://startbootstrap.com/solution/contact-forms * *-->

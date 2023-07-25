@@ -31,7 +31,7 @@
   <link rel="stylesheet" href="{% static 'myapp/panel_and_login/assets/vendor/@fortawesome/fontawesome-free/css/all.min.css' %}" type="text/css">
   <!-- Page plugins -->
   <!-- Argon CSS -->
-  <link rel="stylesheet" href="{% static 'myapp/panel_and_login/assets/css/argon.css?v=1.2.0' %}" type="text/css">
+  <link rel="stylesheet" href="{% static 'myapp/panel_and_login/assets/css/argon.css' %}" type="text/css">
 
   <!-- Specific CSS goes HERE -->
   {% block stylesheets %}{% endblock stylesheets %}
@@ -80,7 +80,7 @@
   <!-- Specific JS goes HERE --> 
   {% block javascripts %}{% endblock javascripts %}
   
-  <script src="/static/assets/js/argon.js?v=1.2.0"></script>
+  <script src="{% static 'myapp/panel_and_login/assets/js/argon.js' %}"></script>
 
 </body>
 

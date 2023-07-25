@@ -3,22 +3,23 @@
 {% block title %} Dashboard {% endblock title %}
 {% load static %}
 <!-- Specific CSS goes HERE -->
-{% block stylesheets %}{% endblock stylesheets %}
 
 {% block content %}
 
-    <!-- Header -->
+    <!-- Header -->    
     <div class="header bg-primary pb-6">
       <div class="container-fluid">
         <div class="header-body">
+          {% if not admin_status %}
           <div class="row align-items-center py-4">
             <div class="col-lg-6 col-7">
               <h6 class="h2 text-white d-inline-block mb-0">Default</h6>
               <nav aria-label="breadcrumb" class="d-none d-md-inline-block ml-md-4">
                 <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
-                  <li class="breadcrumb-item"><a href="#"><i class="fas fa-home"></i></a></li>
-                  <li class="breadcrumb-item"><a href="#">Dashboards</a></li>
-                  <li class="breadcrumb-item active" aria-current="page">Default</li>
+                  <li class="breadcrumb-item"><a href="{% url 'index' %}"><i class="fas fa-home"></i></a></li>
+                  <li class="breadcrumb-item"><a href="{% url 'index' %}">Dashboards</a></li>
+                  <li class="breadcrumb-item"><a href="{% url 'profile' %}">{{request.user.username}}</a></li>
+                  <li class="breadcrumb-item active" aria-current="page">Example</li>
                 </ol>
               </nav>
             </div>
@@ -27,19 +28,17 @@
               <a href="#" class="btn btn-sm btn-neutral">Filters</a>
             </div>
           </div>
+          {% endif %}
           <!-- Card stats -->
-          <div class="row" style="justify-content: space-around;">
+          <div class="row" style="justify-content: space-around; padding: 20px 0 20px">
+            {% if admin_status %}
             <div class="col-xl-3 col-md-6">
               <div class="card card-stats">
                 <!-- Card body -->
                 <div class="card-body">
                   <div class="row">
                     <div class="col">
-                      {% if user_status == 'admin' %}
-                      <h5 class="card-title text-uppercase text-muted mb-0">all traffic</h5>
-                      {% else %}
                       <h5 class="card-title text-uppercase text-muted mb-0">Total traffic</h5>
-                      {% endif %}
                       <span class="h2 font-weight-bold mb-0">350,897</span>
                     </div>
                     <div class="col-auto">
@@ -55,7 +54,8 @@
                 </div>
               </div>
             </div>
-            {% if user_status == 'admin' %}
+            {% endif %}
+            {% if admin_status %}
             <div class="col-xl-3 col-md-6">
               <div class="card card-stats">
                 <!-- Card body -->
@@ -85,7 +85,7 @@
                 <div class="card-body">
                   <div class="row">
                     <div class="col">
-                      {% if user_status == 'admin' %}
+                      {% if admin_status %}
                       <h5 class="card-title text-uppercase text-muted mb-0">Global Sales</h5>
                       {% else %}
                       <h5 class="card-title text-uppercase text-muted mb-0">Total Sales</h5>
@@ -105,7 +105,7 @@
                 </div>
               </div>
             </div>
-            {% if user_status != 'admin' %}
+            {% if not admin_status %}
             <div class="col-xl-3 col-md-6">
               <div class="card card-stats">
                 <!-- Card body -->
@@ -136,8 +136,13 @@
 
     <!-- Page content -->
     <div class="container-fluid mt--6">
+      {% if not admin_status %}
       <div class="row">
         <div class="col-xl-8">
+      {% else %}
+      <div class="row"  style="display: block ">
+        <div class="col-xl-8" style='max-width: 100%'>
+      {%endif%}
           <div class="card bg-default">
             <div class="card-header bg-transparent">
               <div class="row align-items-center">
@@ -172,6 +177,7 @@
             </div>
           </div>
         </div>
+        {% if not admin_status %}
         <div class="col-xl-4">
           <div class="card">
             <div class="card-header bg-transparent">
@@ -190,8 +196,9 @@
             </div>
           </div>
         </div>
+        {% endif %}
       </div>
-      {% if user_status == 'admin' %}
+      {% if admin_status %}
       <div class="row" style='display: block;'>
         <div class="col-xl-8" style = 'max-width: 100%;'>
           <div class="card">

@@ -29,12 +29,12 @@ class ProfileEditForm(forms.Form):
 	country_form = forms.CharField(max_length=255, required = False, label='country')
 	postal_code_form = forms.IntegerField(required = False, label='postal_code')
 	about_me_form = forms.CharField(widget = forms.Textarea, required = False, label='about_me')
-	# username_form = forms.CharField(max_length=255, label='username', required = False, initial=None)
-	# email_form = forms.EmailField(max_length=155, required = False, label='email', initial=None)
-	# first_name_form = forms.CharField(max_length=255, required = False, label='first_name', initial=None)
-	# last_name_form = forms.CharField(max_length=255, required = False, label='last_name', initial=None)
-	# address_form = forms.CharField(widget = forms.Textarea, required = False, label='address', initial=None)
-	# city_form = forms.CharField(max_length=255, required = False, label='city', initial=None)
-	# country_form = forms.CharField(max_length=255, required = False, label='coutry', initial=None)
-	# postal_code_form = forms.IntegerField(required = False, label='postal_code', initial=None)
-	# about_me_form = forms.CharField(widget = forms.Textarea, required = False, label='about_me', initial=None)
+
+
+class FormCreateSettlement(forms.Form):
+	financial_identity_name_form = forms.CharField(max_length=500, label='financial_identity_name')
+	net_profit_form = forms.IntegerField(label = 'net_profit')
+	total_attachment_form = forms.IntegerField(label = 'total_attachment')
+	operating_expens_form = forms.IntegerField(label = 'operating_expens')
+	name_operating_expense_form = forms.CharField(max_length=500, label = 'name_operating_expense')
+	

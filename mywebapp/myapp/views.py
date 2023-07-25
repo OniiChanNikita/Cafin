@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth import logout, login, authenticate
 from .models import *
 from .forms import *
+from django.forms.formsets import formset_factory
 import random
 
 
@@ -85,11 +86,11 @@ def profile(request):
 			user_profile.about_me = request.POST['about_me_form']
 			
 
-			if username == '':
+			if username == '' or username == None:
 				username = request.user.username
-			if email == '':
+			if email == '' or email == None:
 				email = request.user.email
-			if postal_code == '':
+			if postal_code == '' or postal_code == None:
 				postal_code = 0
 			user_rename = User.objects.get(username = request.user.username)
 			user_rename.username = username
@@ -105,3 +106,43 @@ def profile(request):
 	else:
 		edit_form=ProfileEditForm()
 	return render(request, 'myapp/home/profile.html', {'edit_form': edit_form, 'user_profile': user_profile})
+
+@login_required
+def create_finance_settlement(request):
+	InfiniteInputFormSet = formset_factory(FormCreateSettlement, extra=1)
+	if request.method == 'POST':
+		formset = InfiniteInputFormSet(request.POST)
+		if formset.is_valid():
+			input_values = []
+			user = User.objects.get(username = request.user.username)
+			for form in formset:
+				operating_expens = form.cleaned_data['operating_expens_form']
+				name_operating_expense = form.cleaned_data['name_operating_expense_form']
+				print(operating_expens, name_operating_expense)
+				if name_operating_expense and operating_expens:
+					# Создаем объект OperatingExpens и связываем с пользователем
+					operating_expense = OperatingExpens.objects.create(
+						username=user,
+						name_operating_expense=name_operating_expense,
+						operating_expens=operating_expens  # Здесь вы можете указать начальное значение операционных расходов, если необходимо
+					)
+					input_values.append(operating_expense)
+
+			print(input_values)
+
+			financial_identity_name = formset.cleaned_data['financial_identity_name_form']
+			net_profit = formset.cleaned_data['net_profit_form']
+			total_attachment = formset.cleaned_data['total_attachment_form']
+
+			finance_settlement = FinanceSettlement.objects.create(
+				username=user,
+				financial_identity_name=financial_identity_name,  # Здесь вы можете указать имя финансовой свертки, если необходимо
+				net_profit=net_profit,  # Здесь вы можете указать начальное значение чистой прибыли, если необходимо
+				total_attachment=total_attachment  # Здесь вы можете указать начальное значение общего вложения, если необходимо
+            )
+			finance_settlement.input_values.add(*input_values)
+	else:
+		formset = InfiniteInputFormSet()
+	for i in formset:
+		print(i)
+	return render(request, 'myapp/home/create_finance_settlement.html', {'formset': formset})

@@ -8,5 +8,6 @@ urlpatterns = [
     path('register/', views.register_user, name='register'),
     path('logout/', views.logout_user, name = 'logout'),
 
-    path('profile/', views.profile, name='profile')
+    path('profile/', views.profile, name='profile'),
+    path('create_finance_settlement/', views.create_finance_settlement, name='create_finance_settlement'),
 ]#  + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

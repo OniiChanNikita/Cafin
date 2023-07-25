@@ -47,6 +47,12 @@
               <span class="nav-link-text">Tables</span>
             </a>
           </li>
+          <li class="nav-item">
+            <a class="nav-link {% if 'create_settlement' in segment %} active {% endif %}" href="{% url 'create_finance_settlement' %}">
+              <i class="ni ni-bullet-list-67 text-default" style='color: #11cdef !important' id = 'finance_settlement'></i>
+              <span class="nav-link-text">Finance Settlement</span>
+            </a>
+          </li>
           {% else %}
           <li class="nav-item">
             <a class="nav-link {% if 'tables' in segment %} active {% endif %}" href="/tables.html">

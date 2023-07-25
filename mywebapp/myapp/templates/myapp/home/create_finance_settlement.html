@@ -1,0 +1,155 @@
+{% extends 'myapp/layouts/base.html' %}
+{% load static %}
+{% block title %} Profile {% endblock title %}
+
+{% block content %}
+
+<div class="header pb-6 d-flex align-items-center" 
+     style="min-height: 500px; background-image: url(/static/assets/img/theme/profile-cover.jpg); background-size: cover; background-position: center top;">
+  <!-- Mask -->
+  <span class="mask bg-gradient-default opacity-8" style = 'background: linear-gradient(87deg, #8965e0 0, #172b4d 100%) !important'></span>
+  <!-- Header container -->
+  <div class="container-fluid d-flex align-items-center">
+    <div class="row">
+      <div class="col-lg-7 col-md-10">
+        <h1 class="display-2 text-white"> 
+          Hello {{ request.user.username }}
+        </h1>
+        <p class="text-white mt-0 mb-5">This is your profile page. You can see the progress you've made with your work and manage your projects or assigned tasks</p>
+        <a href="#about" class="btn btn-neutral">Create finance settlement</a>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Page content -->
+<div class="container-fluid mt--6">
+  <div class="row" style = 'display: block;'>
+    <div class="col-xl-8 order-xl-1" style = 'max-width: 100%;'>
+      <div class="card">
+        <div class="card-header">
+          <div class="row align-items-center">
+            <div class="col-8">
+              <h3 class="mb-0">Edit profile </h3>
+            </div>
+            <div class="col-4 text-right">
+              <a href="#!" class="btn btn-sm btn-primary">Settings</a>
+            </div>
+          </div>
+        </div>
+        <div class="card-body">
+          <form method='post' id = 'my-form'>
+            {% csrf_token %}
+            <h6 class="heading-small text-muted mb-4">User information</h6>
+            <div class="pl-lg-4">
+              <div class="row">
+                {% for i in formset %}
+                {% if i.prefix == 'form-0' and i.financial_identity_name_form %}
+                <div class="col-lg-6">
+                  <div class="form-group">
+                    <label class="form-control-label" for="input-username">Username</label>
+                    <input type="text" id="id_form-0-financial_identity_name_form" name='form-0-financial_identity_name_form' class="form-control" placeholder="Financial name" value="">
+                  </div>
+                </div>
+                {% endif %}
+                {% endfor %}
+
+                {% for i in formset %}
+                {% if i.prefix == 'form-0' and i.net_profit_form %}
+                <div class="col-lg-6">
+                  <div class="form-group">
+                    <label class="form-control-label" for="input-email">Email address</label>
+                    <input type="text" id="id_net_profit_form" name='net_profit_form' class="form-control" placeholder="Net profit">
+                  </div>
+                </div>
+                {% endif %}
+                {% endfor %}
+
+              </div>
+              <div class="row">
+                {% for i in formset %}
+                {% if i.prefix == 'form-0' and i.total_attachment_form %}
+                <div class="col-lg-6">
+                  <div class="form-group">
+                    <label class="form-control-label" for="input-first-name">First name</label>
+                    <input type="text" id="id_total_attachment_form" name='total_attachment_form' class="form-control" placeholder="Total attachment">
+                  </div>
+                </div>
+                {% endif %}
+                {% endfor %}
+
+              </div>
+            </div>
+            <hr class="my-4" />
+            <!-- Address -->
+            <h6 class="heading-small text-muted mb-4">Contact information</h6>
+            <div class="pl-lg-4" id = 'infinite-inputs'>
+              <div class="row infinite-input-form">
+                {% for i in formset %}
+                {% if i.prefix == 'form-0' and i.name_operating_expense_form %}
+                <div class="col-md-12">
+                  <div class="form-group">
+                    <label class="form-control-label" for="input-address">Address</label>
+                    <input id="id_name_operating_expense_form" name='name_operating_expense_form' class="form-control infinite-input-form" placeholder="Name operating expense" type="text">
+                  </div>
+                </div>
+                {% endif %}
+                {% endfor %}
+
+                {% for i in formset %}
+                {% if i.prefix == 'form-0' and i.operating_expens_form %}
+
+                <div class="col-lg-4">
+                  <div class="form-group">
+                    <label class="form-control-label" for="input-city">City</label>
+                    <input type="text" id="id_operating_expens_form" name='operating_expens_form' class="form-control infinite-input-form" placeholder="City" value="{{user_profile.city}}">
+                  </div>
+                </div>
+                {% endif %}
+                {% endfor %}
+              </div>
+            </div>
+            <button type="button" id="add-input-btn" class="btn btn-neutral" style='left: left;'>Add operating expense</button>
+            <input type="submit" value='Confirm' class="btn btn-neutral" style='float: right;'>
+          </form>
+          <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+          <script>
+              var formsetPrefix = '{{ formset.prefix }}';
+              
+              function updateFormsetIndexes() {
+                  var forms = document.querySelectorAll('.infinite-input-form');
+                  forms.forEach(function(form, index) {
+                      form.querySelectorAll('input').forEach(function(input) {
+                          var oldName = input.getAttribute('name');
+                          var newName = oldName.replace(/__prefix__/g, index);
+                          input.setAttribute('name', newName);
+                      });
+                  });
+              }
+              
+              document.getElementById('add-input-btn').addEventListener('click', function () {
+                  // Клонируем первую форму в formset'е и обновляем индексы
+                  var formset = document.getElementById('infinite-inputs');
+                  if (formset.firstElementChild) {
+                    var newForm = formset.firstElementChild.cloneNode(true);
+                    formset.appendChild(newForm);
+                    updateFormsetIndexes();
+                  }
+              });
+              
+              // Вызываем функцию updateFormsetIndexes, чтобы установить правильные индексы для форм в formset'е
+              updateFormsetIndexes();
+          </script>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% include "myapp/includes/footer.html" %}
+
+</div>
+
+{% endblock content %}
+
+<!-- Specific JS goes HERE --> 
+{% block javascripts %}{% endblock javascripts %}

@@ -19,3 +19,25 @@ class UserProfile(models.Model):
 
 	def __str__(self):
 		return self.username.username
+
+
+
+class OperatingExpens(models.Model):
+	username = models.OneToOneField(User, on_delete=models.CASCADE)
+	name_operating_expense = models.CharField(max_length=500)
+	operating_expens = models.IntegerField()
+
+	def __str__(self):
+		return self.username.username+'/_input_/'+self.name_operating_expense
+	
+
+class FinanceSettlement(models.Model):
+	username = models.OneToOneField(User, on_delete=models.CASCADE)
+	financial_identity_name = models.CharField(max_length=500)
+	net_profit = models.IntegerField()
+	total_attachment = models.IntegerField()
+	input_values = models.ManyToManyField(OperatingExpens)
+
+	def __str__(self):
+		return self.username.username
+

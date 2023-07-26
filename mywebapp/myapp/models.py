@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
-    
+from django.contrib.auth.models import UserManager
 class UserProfile(models.Model):
 	username = models.OneToOneField(User, on_delete=models.CASCADE)
 	password = models.CharField(max_length=50)
@@ -22,17 +22,18 @@ class UserProfile(models.Model):
 
 
 
+
 class OperatingExpens(models.Model):
-	username = models.OneToOneField(User, on_delete=models.CASCADE)
+	username = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True)
 	name_operating_expense = models.CharField(max_length=500)
 	operating_expens = models.IntegerField()
-
 	def __str__(self):
-		return self.username.username+'/_input_/'+self.name_operating_expense
-	
+		return self.name_operating_expense
+
+
 
 class FinanceSettlement(models.Model):
-	username = models.OneToOneField(User, on_delete=models.CASCADE)
+	username = models.ForeignKey(User, on_delete=models.CASCADE)
 	financial_identity_name = models.CharField(max_length=500)
 	net_profit = models.IntegerField()
 	total_attachment = models.IntegerField()
@@ -40,4 +41,3 @@ class FinanceSettlement(models.Model):
 
 	def __str__(self):
 		return self.username.username
-

@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth import logout, login, authenticate
 from .models import *
+from django.db.models import *
 from .forms import *
 from django.forms.formsets import formset_factory
 import random
@@ -23,7 +24,9 @@ def index(request):
 		else:
 			admin_status = False
 		financesettlement = FinanceSettlement.objects.filter(username = request.user)
-		return render(request, 'myapp/home/index.html', {'admin_status': admin_status, 'financesettlement':financesettlement})
+		total_sales=financesettlement.count()
+		all_percent = financesettlement.aggregate(all_percent=Avg('percent_net_profit'))['all_percent']
+		return render(request, 'myapp/home/index.html', {'admin_status': admin_status, 'total_sales':total_sales, 'all_percent': all_percent,})
 
 def register_user(request):
 	if not request.user.is_authenticated:

@@ -115,7 +115,6 @@
               inputs_total_forms.value = totalForms+1
 
               var newForm = formset.firstElementChild.cloneNode(true);
-              // Update the prefix for form elements to ensure uniqueness
               var newPrefix = 'form-' + totalForms;
               var inputs = newForm.getElementsByTagName('input');
               var selects = newForm.getElementsByTagName('select');

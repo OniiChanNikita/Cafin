@@ -22,7 +22,8 @@ def index(request):
 			admin_status = True
 		else:
 			admin_status = False
-		return render(request, 'myapp/home/index.html', {'admin_status': admin_status})
+		financesettlement = FinanceSettlement.objects.filter(username = request.user)
+		return render(request, 'myapp/home/index.html', {'admin_status': admin_status, 'financesettlement':financesettlement})
 
 def register_user(request):
 	if not request.user.is_authenticated:
@@ -118,6 +119,7 @@ def create_finance_settlement(request):
 		print(form.is_valid(), formset.is_valid())
 		if form.is_valid() and formset.is_valid():
 			querty_list = []
+			not_net_profit = 0
 			user = User.objects.get(username=request.user.username)
 
 			financial_identity_name = request.POST['financial_identity_name_form']
@@ -126,19 +128,27 @@ def create_finance_settlement(request):
 
 			for f_form in formset:
 				if f_form.is_valid() and f_form.has_changed():
+					f_form.username = user
 					f_form.save()
 					print(f_form.cleaned_data['operating_expens'])
 					operating_expense = OperatingExpens.objects.filter(operating_expens = f_form.cleaned_data['operating_expens'],
 																		name_operating_expense =  f_form.cleaned_data['name_operating_expense']).first()
-					operating_expense.username = user
+					if operating_expense:
+						operating_expense.username = request.user
+						operating_expense.save()
+					not_net_profit+=f_form.cleaned_data['operating_expens']
 					querty_list.append(operating_expense)
 			print(querty_list, '<-------------------')
-
+			percent_net_profit = 0
+			print(not_net_profit)
+			if int(not_net_profit)<int(net_profit):
+				percent_net_profit = (1-(int(not_net_profit)/int(net_profit)))*100
 			finance_settlement = FinanceSettlement.objects.create(
 				username=user,
-				financial_identity_name=financial_identity_name,  # Здесь вы можете указать имя финансовой свертки, если необходимо
-				net_profit=net_profit,  # Здесь вы можете указать начальное значение чистой прибыли, если необходимо
-				total_attachment=total_attachment  # Здесь вы можете указать начальное значение общего вложения, если необходимо
+				financial_identity_name=financial_identity_name,  
+				net_profit=net_profit,  
+				total_attachment=total_attachment,
+				percent_net_profit=percent_net_profit
 			)
 			finance_settlement.input_values.add(*querty_list)
 			
@@ -146,3 +156,9 @@ def create_finance_settlement(request):
 		form = FormCreateSettlement()
 		formset = InfiniteInputFormSet(queryset=OperatingExpens.objects.none())
 	return render(request, 'myapp/home/create_finance_settlement.html',  {'form': form, 'formset': formset})
+
+
+@login_required
+def finance_tables(request):
+	financesettlement = FinanceSettlement.objects.filter(username = request.user)
+	return render(request, 'myapp/home/tables.html', {"financesettlement": financesettlement})

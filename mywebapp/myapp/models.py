@@ -37,6 +37,7 @@ class FinanceSettlement(models.Model):
 	financial_identity_name = models.CharField(max_length=500)
 	net_profit = models.IntegerField()
 	total_attachment = models.IntegerField()
+	percent_net_profit = models.IntegerField()
 	input_values = models.ManyToManyField(OperatingExpens)
 
 	def __str__(self):

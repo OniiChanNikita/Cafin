@@ -10,4 +10,5 @@ urlpatterns = [
 
     path('profile/', views.profile, name='profile'),
     path('create_finance_settlement/', views.create_finance_settlement, name='create_finance_settlement'),
+    path('finance_tables/', views.finance_tables, name = 'finance_tables')
 ]#  + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

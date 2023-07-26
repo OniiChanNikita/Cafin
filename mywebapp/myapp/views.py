@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth import logout, login, authenticate
 from .models import *
 from django.db.models import *
+from django.db.models.functions import ExtractMonth
 from .forms import *
 from django.forms.formsets import formset_factory
 import random
@@ -21,12 +22,27 @@ def index(request):
 	else: 
 		if request.user.is_superuser:
 			admin_status = True
+			financesettlement = FinanceSettlement.objects.all()
 		else:
 			admin_status = False
-		financesettlement = FinanceSettlement.objects.filter(username = request.user)
+			financesettlement = FinanceSettlement.objects.filter(username = request.user)
+
 		total_sales=financesettlement.count()
 		all_percent = financesettlement.aggregate(all_percent=Avg('percent_net_profit'))['all_percent']
-		return render(request, 'myapp/home/index.html', {'admin_status': admin_status, 'total_sales':total_sales, 'all_percent': all_percent,})
+		print(all_percent)
+
+		net_profit_by_month = []
+		procent_net_profit_by_month = []
+
+		for month in range(1, 13):
+			settlement = financesettlement.filter(created_at__month=month)
+			net_progit_sum = settlement.aggregate(all_percent=Sum('net_profit'))['all_percent']
+			net_profit_by_month.append(net_progit_sum)
+		for month in range(1, 13):
+			settlement = financesettlement.filter(created_at__month=month).first()
+			procent_net_profit_by_month.append(settlement)
+
+		return render(request, 'myapp/home/index.html', {'admin_status': admin_status, 'total_sales':total_sales, 'all_percent': all_percent, 'net_profit_by_month':net_profit_by_month, 'procent_net_profit_by_month': procent_net_profit_by_month})
 
 def register_user(request):
 	if not request.user.is_authenticated:
@@ -141,9 +157,7 @@ def create_finance_settlement(request):
 						operating_expense.save()
 					not_net_profit+=f_form.cleaned_data['operating_expens']
 					querty_list.append(operating_expense)
-			print(querty_list, '<-------------------')
-			percent_net_profit = 0
-			print(not_net_profit)
+			percent_net_profit = -(int(net_profit)/int(not_net_profit))*100
 			if int(not_net_profit)<int(net_profit):
 				percent_net_profit = (1-(int(not_net_profit)/int(net_profit)))*100
 			finance_settlement = FinanceSettlement.objects.create(

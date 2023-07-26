@@ -48,7 +48,6 @@
   <div class="main-content" id="panel">
 
     {% include "myapp/includes/navigation.html" %}
-
     {% block content %}{% endblock content %}
 
   </div>
@@ -56,10 +55,133 @@
   {% include "myapp/includes/scripts.html" %}
 
   <!-- Specific JS goes HERE --> 
-  {% block javascripts %}{% endblock javascripts %}
+  {% block javascripts %}
+  {% endblock javascripts %}
+  <script src="{% static 'myapp/panel_and_login/assets/js/argon.js' %}">
+  </script>
+  <script>
+    var BarsChart = (function() {
 
-  <script src="{% static 'myapp/panel_and_login/assets/js/argon.js' %}"></script>
+  //
+  // Variables
+  //
 
+  var $chart = $('#chart-bars');
+
+
+  //
+  // Methods
+  //
+
+  // Init chart
+  function initChart($chart) {
+
+    // Create chart
+    var ordersChart = new Chart($chart, {
+      type: 'bar',
+      data: {
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+        datasets: [{
+          label: 'Sales',
+          data: [{%for i in net_profit_by_month %}{% if i %}{{i}},{% else %}0,{% endif %}{% endfor %}]
+        }]
+      }
+    });
+
+    // Save to jQuery object
+    $chart.data('chart', ordersChart);
+  }
+
+
+  // Init chart
+  if ($chart.length) {
+    initChart($chart);
+  }
+
+})();
+
+'use strict';
+
+//
+// Sales chart
+//
+
+var SalesChart = (function() {
+
+  // Variables
+
+  var $chart = $('#chart-sales-dark');
+
+
+  // Methods
+
+  function init($chart) {
+
+    var salesChart = new Chart($chart, {
+      type: 'line',
+      options: {
+        scales: {
+          yAxes: [{
+            gridLines: {
+              lineWidth: 1,
+              color: Charts.colors.gray[900],
+              zeroLineColor: Charts.colors.gray[900]
+            },
+            ticks: {
+              callback: function(value) {
+                if (!(value % 10)) {
+                  return value + '%';
+                }
+              }
+            }
+          }]
+        },
+        tooltips: {
+          callbacks: {
+            label: function(item, data) {
+              var label = data.datasets[item.datasetIndex].label || '';
+              var yLabel = item.yLabel;
+              var content = '';
+
+              if (data.datasets.length > 1) {
+                content += '<span class="popover-body-label mr-auto">' + label + '</span>';
+              }
+
+              content += '<span class="popover-body-value">$' + yLabel + 'k</span>';
+              return content;
+            }
+          }
+        }
+      },
+      data: {
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+        datasets: [{
+          label: 'Performance',
+          {% if not admin_status %}
+          data: [{% for i in procent_net_profit_by_month %}{% if i %}{{i.percent_net_profit}},{% else %}0,{% endif %}{% endfor %}]
+          {% else %}
+          data: [{% for i in procent_net_profit_by_month %}{% if i %}{{i.percent_net_profit}},{% else %}0,{% endif %}{% endfor %}]
+          
+          {% endif %}
+        }]
+      }
+    });
+
+    // Save to jQuery object
+
+    $chart.data('chart', salesChart);
+
+  };
+
+
+  // Events
+
+  if ($chart.length) {
+    init($chart);
+  }
+
+})();
+</script>
 </body>
 
 </html>

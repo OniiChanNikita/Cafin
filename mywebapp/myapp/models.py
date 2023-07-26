@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
-from django.contrib.auth.models import UserManager
+from django.utils import timezone
+
 class UserProfile(models.Model):
 	username = models.OneToOneField(User, on_delete=models.CASCADE)
 	password = models.CharField(max_length=50)
@@ -13,6 +14,7 @@ class UserProfile(models.Model):
 	postal_code = models.IntegerField(null=True)
 	about_me = models.TextField(null=True)
 	slug_indetefication = models.SlugField(unique=True, null=False)
+	created_at = models.DateTimeField(default=timezone.now)
 
 	def get_absolute_url_profile(self):
 		return reverse("article_detail", kwargs={"slug_indetefication": self.slug_indetefication}) 
@@ -27,6 +29,7 @@ class OperatingExpens(models.Model):
 	username = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True)
 	name_operating_expense = models.CharField(max_length=500)
 	operating_expens = models.IntegerField()
+	created_at = models.DateTimeField(default=timezone.now)
 	def __str__(self):
 		return self.name_operating_expense
 
@@ -39,6 +42,7 @@ class FinanceSettlement(models.Model):
 	total_attachment = models.IntegerField()
 	percent_net_profit = models.IntegerField()
 	input_values = models.ManyToManyField(OperatingExpens)
+	created_at = models.DateTimeField(default=timezone.now)
 
 	def __str__(self):
 		return self.username.username

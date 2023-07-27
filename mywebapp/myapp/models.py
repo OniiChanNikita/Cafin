@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
+from django.urls import reverse
 
 class UserProfile(models.Model):
 	username = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -43,6 +44,10 @@ class FinanceSettlement(models.Model):
 	percent_net_profit = models.IntegerField()
 	input_values = models.ManyToManyField(OperatingExpens)
 	created_at = models.DateTimeField(default=timezone.now)
+	slug_financesettlement = models.SlugField(unique=True, null=True)
+
+	def get_absolute_url_profile(self):
+		return reverse("open_finance_settlement", kwargs={"slug_financesettlement": self.slug_financesettlement}) 
 
 	def __str__(self):
 		return self.username.username

@@ -1,0 +1,229 @@
+{% extends 'myapp/layouts/base.html' %}
+{% load static %}
+{% block title %} Tables {% endblock title %}
+
+{% block content %}
+  <style type="text/css">.table th, .table td{padding: 1rem 2.5rem 1rem 2.5rem;}</style>
+  <div class="header bg-primary pb-6">
+    <div class="container-fluid">
+      <div class="header-body">
+        <div class="row align-items-center py-4">
+          <div class="col-lg-6 col-7">
+            <h6 class="h2 text-white d-inline-block mb-0">Tables</h6>
+            <nav aria-label="breadcrumb" class="d-none d-md-inline-block ml-md-4">
+              <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
+                <li class="breadcrumb-item"><a href="#"><i class="fas fa-home"></i></a></li>
+                <li class="breadcrumb-item"><a href="#">Tables</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Tables</li>
+              </ol>
+            </nav>
+          </div>
+          <div class="col-lg-6 col-5 text-right">
+            <a href="#" class="btn btn-sm btn-neutral">New</a>
+            <a href="#" class="btn btn-sm btn-neutral">Filters</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Page content -->
+  <div class="container-fluid mt--6">
+    <div class="row">
+      <div class="col">
+        <div class="card">
+          <!-- Card header -->
+          <div class="card-header border-0" id = 'widthScale' style='overflow-x: hidden; '>
+            
+            <div class="card-body">
+            <div class="row"  style='justify-content: space-around; gap: 1.5rem'>
+              <div class="row" style = 'border: 1px solid lightgray; border-radius: 10px; margin-bottom: 20px; box-shadow: lightgray 5px 5px 20px 0px; width: auto; min-height: 2rem; min-width: 100px'>
+              <h3 align="center" style=' width: 100%; color: #5e72e4; margin: 0.5rem'>{{get_obj.username}}</h3>
+              </div>
+              <div class="col-xl-3 col-md-6 ">
+                <div class="row" style='justify-content: space-around;'>
+                  <div class="col-lg-6" style="max-width: 100%;">
+                    <div class="form-group" align="center">
+                      <div class="row" style = 'border: 1px solid lightgray; border-radius: 10px; margin-bottom: 20px; box-shadow: lightgray 5px 5px 20px 0px; width: auto; min-width: 100px'>
+                      <a align="center" style=' color: #5e72e4; margin: 0.5rem' class='text-muted'>{{get_obj.total_attachment}}</a> <i style="margin:auto;" class="right"></i> <a align="center" style=' color: #5e72e4; margin: 0.5rem' class='text-muted'>{{get_obj.net_profit}}</a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div id='percent_net-total' class='text-muted  col-xl-3 col-md-6' align="center">
+                <div class="row" style = 'border: 1px solid lightgray; border-radius: 10px; margin-bottom: 20px; box-shadow: lightgray 5px 5px 20px 0px; width: auto; min-height: 2rem; min-width: 100px'>
+                  <h3 align="center" style=' width: 100%; margin: 0.5rem' class="text-success mr-2">{{get_obj_avg_total_net}}%</h3>
+                </div>
+              </div>
+            </div>
+            <hr class="my-4" />
+            <h6 class="heading-small text-muted mb-4">All expenses</h6>
+            <style type="text/css">
+            #infinite-inputs{
+              display: flex;
+              flex-direction: row;
+              justify-content: start;
+              overflow-x:scroll;
+              overflow-y: hidden;
+              -ms-overflow-style: none;  /* Internet Explorer 10+ */
+              scrollbar-width: none;  /* Firefox */
+              padding: 0 0 0 50px;
+              transition: transform 0.2s ease-in-out;
+
+            }
+            .left-side {
+              position: absolute;
+              left: 0px;
+              width: 100px; /* Ширина правой боковой стороны */
+              height: 200px; /* Высота левой боковой стороны */
+              background-color: red; /* Цвет фона левой боковой стороны */
+              background: linear-gradient(to right, rgba(255,255,255,1) 90%,rgba(255,255,255,0) 100%); /* Цвет фона правой боковой стороны */
+
+            }
+            .right-side {
+              position: absolute;
+              right: 0;
+              width: 100px; /* Ширина правой боковой стороны */
+              height: 200px; /* Высота правой боковой стороны */
+              background: linear-gradient(to left, rgba(255,255,255,1) 90%,rgba(255,255,255,0) 100%); /* Цвет фона правой боковой стороны */
+            }
+            #infinite-inputs::-webkit-scrollbar { 
+                display: none;  /* Safari and Chrome */
+            }
+            .points-container {
+              height: 20px;
+              width: 100%;
+              display: flex;
+              flex-direction: row;
+              justify-content: center;
+              gap: 10px;
+            }
+
+            .point {
+              width: 5px;
+              height: 5px;
+              border-radius: 50%;
+              background-color: gray; 
+            }
+
+            .point.active {
+              background-color: black;
+            }
+            #block_scroll{
+              display: flex;
+              flex-direction: row;
+              justify-content: start;
+              flex-wrap: nowrap;
+              gap: 100px;
+            }
+            i.right, i.left {
+              width: 7px;
+              height: 7px;
+              border: solid gray;
+              border-width: 0 3px 3px 0;
+              display: inline-block;
+              padding: 3px;
+            }
+            .right {
+              transform: rotate(-45deg);
+              -webkit-transform: rotate(-45deg);
+            }
+
+            .left {
+              transform: rotate(135deg);
+              -webkit-transform: rotate(135deg);
+            }
+            </style>
+            <div id = 'infinite-inputs' style=" margin: 0 20px;min-width:min(calc((calc({{get_obj_count}}*100px)+calc({{get_obj_count}}*100%)), 1000px;)">
+                <div class="left-side"></div>
+                <div  class="pl-lg-4" id = 'block_scroll'  style='padding: 0 !important; max-width: 500px;'>
+                  {% for i in get_expenses_obj %}
+
+                  <div class="row infinite-input-form" style = 'border: 1px solid lightgray; border-radius: 10px; margin-bottom: 20px; box-shadow: lightgray 5px 5px 20px 0px ; min-width: 100%'>
+                    <div class="col-md-12">
+                      <div class="row" style=' justify-content: space-between;margin: 5px'>
+                        <label class="form-control-label" style='font-size: 20px' for="input-username">{{i.name_operating_expense}}</label>
+                        <label class="form-control-label" style='color: lightgray; font-size: 10px' for="input-username">{{i.created_at.date|date:"d.m.Y"}}</label>
+                      </div>
+                      <div class="row" style="justify-content: center">
+                        <div style="display: flex; flex-direction: column;justify-content: center">
+                          <span  class="h2 font-weight-bold mb-0" ><h3 align='center'>{{i.operating_expens}}</h3></span>
+                          <p class='mt-3 mb-0 text-sm' style="margin-top: 0.25rem !important;">
+                            <span class="text-success mr-2">
+                              <i class="fa fa-arrow-up"></i>Average {{get_obj_avg}} </span>
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="col-lg-4">
+                      <div class="form-group">
+                      </div>
+                    </div>
+                  </div>
+                  {% endfor %}
+                </div>
+                <div class="right-side"></div>
+            </div>
+            <div class="points-container">
+              <!-- <i class="left"></i> -->
+              {% for i in get_expenses_obj %}
+              <div class="point" data-section=""></div>
+              {% endfor %}
+              <!-- <i class="right"></i> -->
+            </div>
+            <div>
+            <button type="button" id="add-input-btn" class="btn btn-neutral" style='left: left;'>Add operating expense</button>
+            <input type="submit" value='Confirm' class="btn btn-neutral" style='float: right;'>
+          </form>
+          <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+          <script>
+
+          const pointsContainer = document.querySelector('.points-container');
+          console.log(pointsContainer.children[0])
+          pointsContainer.children[0].classList.add('active');
+
+          $('#infinite-inputs').scroll(function(){
+            var scrollPercentage = 100 * this.scrollLeft / (this.scrollWidth-this.clientWidth);
+            const activePoint = Math.round(scrollPercentage / 100 * (pointsContainer.children.length - 1));
+            console.log(activePoint)
+            for (let i = 0; i < pointsContainer.children.length; i++) {
+              if (i === activePoint) {
+                pointsContainer.children[i].classList.add('active');
+              } else {
+                pointsContainer.children[i].classList.remove('active');
+              }
+            }
+          });
+          document.getElementById('add-input-btn').addEventListener('click', function (e) {
+            e.preventDefault();
+            var formset = document.getElementById('infinite-inputs');
+            var totalForms = formset.querySelectorAll('.infinite-input-form').length;
+            var inputs_total_forms = document.getElementById('id_form-TOTAL_FORMS');
+            inputs_total_forms.value = totalForms+1
+
+            var newForm = formset.firstElementChild.cloneNode(true);
+            var newPrefix = 'form-' + totalForms;
+            var inputs = newForm.getElementsByTagName('input');
+            var selects = newForm.getElementsByTagName('select');
+            for (var i = 0; i < inputs.length; i++) {
+              inputs[i].name = inputs[i].name.replace(/form-\d/, newPrefix);
+              inputs[i].id = inputs[i].id.replace(/form-\d/, newPrefix);
+            }
+            formset.appendChild(newForm);
+            });
+          </script>
+        </div>  
+          </div>
+          
+        </div>
+      </div>
+    </div>
+  </div>
+    {% include "myapp/includes/footer.html" %}
+
+{% endblock content %}
+
+<!-- Specific JS goes HERE --> 
+{% block javascripts %}{% endblock javascripts %}

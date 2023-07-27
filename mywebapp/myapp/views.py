@@ -8,7 +8,7 @@ from .forms import *
 from django.forms.formsets import formset_factory
 import random
 from django.forms import modelformset_factory
-
+from django.utils import timezone
 
 
 def specific_string(length): 
@@ -36,13 +36,28 @@ def index(request):
 
 		for month in range(1, 13):
 			settlement = financesettlement.filter(created_at__month=month)
-			net_progit_sum = settlement.aggregate(all_percent=Sum('net_profit'))['all_percent']
+			net_progit_sum = settlement.aggregate(net_progit_sum=Sum('net_profit'))['net_progit_sum']
 			net_profit_by_month.append(net_progit_sum)
 		for month in range(1, 13):
-			settlement = financesettlement.filter(created_at__month=month).first()
-			procent_net_profit_by_month.append(settlement)
+			settlement = financesettlement.filter(created_at__month=month)
+			all_percent_settlement = settlement.aggregate(all_percent_settlement=Avg('percent_net_profit'))['all_percent_settlement']
+			procent_net_profit_by_month.append(all_percent_settlement)
 
-		return render(request, 'myapp/home/index.html', {'admin_status': admin_status, 'total_sales':total_sales, 'all_percent': all_percent, 'net_profit_by_month':net_profit_by_month, 'procent_net_profit_by_month': procent_net_profit_by_month})
+		current_datetime = timezone.now()
+		if financesettlement.filter(created_at__month=current_datetime.month).count() >= financesettlement.filter(created_at__month=current_datetime.month-1).count() and financesettlement.filter(created_at__month=current_datetime.month).count() != 0:
+			procent_since_last_month_sales = (1-(financesettlement.filter(created_at__month=current_datetime.month-1).count() / financesettlement.filter(created_at__month=current_datetime.month).count()))*100
+		else: 
+			procent_since_last_month_sales = -(financesettlement.filter(created_at__month=current_datetime.month).count() / financesettlement.filter(created_at__month=current_datetime.month-1).count())*100
+
+		if financesettlement.filter(created_at__month=current_datetime.month).aggregate(all_percent=Avg('percent_net_profit'))['all_percent'] >= financesettlement.filter(created_at__month=current_datetime.month-1).aggregate(all_percent=Avg('percent_net_profit'))['all_percent'] and financesettlement.filter(created_at__month=current_datetime.month).aggregate(all_percent=Avg('percent_net_profit'))['all_percent'] != 0:
+			procent_since_last_month_net = (1-(financesettlement.filter(created_at__month=current_datetime.month-1).aggregate(all_percent=Avg('percent_net_profit'))['all_percent'] / financesettlement.filter(created_at__month=current_datetime.month).aggregate(all_percent=Avg('percent_net_profit'))['all_percent']))*100
+		else: 
+			procent_since_last_month_net = -(financesettlement.filter(created_at__month=current_datetime.month).aggregate(all_percent=Avg('percent_net_profit'))['all_percent'] / financesettlement.filter(created_at__month=current_datetime.month-1).aggregate(all_percent=Avg('percent_net_profit'))['all_percent'])*100
+
+
+		return render(request, 'myapp/home/index.html', {'admin_status': admin_status, 'total_sales':total_sales, 'all_percent': round(all_percent, 2),
+	 													'net_profit_by_month':net_profit_by_month, 'procent_net_profit_by_month': procent_net_profit_by_month,
+	 													'procent_since_last_month_sales': round(procent_since_last_month_sales, 2), 'procent_since_last_month_net': round(procent_since_last_month_net, 2)})
 
 def register_user(request):
 	if not request.user.is_authenticated:
@@ -165,7 +180,8 @@ def create_finance_settlement(request):
 				financial_identity_name=financial_identity_name,  
 				net_profit=net_profit,  
 				total_attachment=total_attachment,
-				percent_net_profit=percent_net_profit
+				percent_net_profit=percent_net_profit,
+				slug_financesettlement=specific_string(10),
 			)
 			finance_settlement.input_values.add(*querty_list)
 			
@@ -174,8 +190,23 @@ def create_finance_settlement(request):
 		formset = InfiniteInputFormSet(queryset=OperatingExpens.objects.none())
 	return render(request, 'myapp/home/create_finance_settlement.html',  {'form': form, 'formset': formset})
 
-
 @login_required
 def finance_tables(request):
 	financesettlement = FinanceSettlement.objects.filter(username = request.user)
 	return render(request, 'myapp/home/tables.html', {"financesettlement": financesettlement})
+
+@login_required
+def open_finance_settlement(request, slug_financesettlement):
+	get_object_slug_financesettlement = get_object_or_404(FinanceSettlement, slug_financesettlement=slug_financesettlement)
+	get_obj = get_object_slug_financesettlement.input_values.all()
+	get_obj_avg = get_obj.aggregate(get_obj_avg=Avg('operating_expens'))['get_obj_avg']
+	get_obj_avg_total = get_object_slug_financesettlement.total_attachment
+	get_obj_avg_net = get_object_slug_financesettlement.net_profit
+	if get_obj_avg_total > get_obj_avg_net:
+		get_obj_avg_tn = -(get_obj_avg_net/get_obj_avg_total)*100
+	else:
+		get_obj_avg_tn = (1-(get_obj_avg_total/get_obj_avg_net))*100
+	return render(request, 'myapp/home/open_tables.html', {'get_obj': get_object_slug_financesettlement, 'get_expenses_obj': get_object_slug_financesettlement.input_values.all(),
+															 'get_obj_count': get_object_slug_financesettlement.input_values.all().count(), 'get_obj_avg': round(get_obj_avg, 2),
+															 'get_obj_avg_total_net': round(get_obj_avg_tn, 2)})
+

@@ -51,7 +51,7 @@
               </thead>
               <tbody class="list">
                 {% for i in financesettlement %}
-                <tr>
+                <tr data-id = '{{ i.id }}' class = 'table_element'>
                   <th scope="row">
                     <div class="media align-items-center">
                       <a href="#" class="avatar rounded-circle mr-3">
@@ -91,7 +91,7 @@
                       </a>
                       <div class="dropdown-menu dropdown-menu-right dropdown-menu-arrow">
                         <a class="dropdown-item" href="{{i.get_absolute_url_profile}}">Deteils...</a>
-                        <a class="dropdown-item" href="#" style='color: #f5365c !important'>Delete</a>
+                        <button onclick="deleteElement({{ i.id }})" class="dropdown-item button_delete" href="#" style='border: none; outline: none; color: #f5365c !important'>Delete</button>
                       </div>
                     </div>
                   </td>
@@ -100,32 +100,7 @@
               </tbody>
             </table>
           </div>
-          <!-- Card footer -->
-          <!-- <div class="card-footer py-4">
-            <nav aria-label="...">
-              <ul class="pagination justify-content-end mb-0">
-                <li class="page-item disabled">
-                  <a class="page-link" href="#" tabindex="-1">
-                    <i class="fas fa-angle-left"></i>
-                    <span class="sr-only">Previous</span>
-                  </a>
-                </li>
-                <li class="page-item active">
-                  <a class="page-link" href="#">1</a>
-                </li>
-                <li class="page-item">
-                  <a class="page-link" href="#">2 <span class="sr-only">(current)</span></a>
-                </li>
-                <li class="page-item"><a class="page-link" href="#">3</a></li>
-                <li class="page-item">
-                  <a class="page-link" href="#">
-                    <i class="fas fa-angle-right"></i>
-                    <span class="sr-only">Next</span>
-                  </a>
-                </li>
-              </ul>
-            </nav>
-          </div> -->
+         
           
         </div>
       </div>
@@ -134,6 +109,47 @@
     {% include "myapp/includes/footer.html" %}
 
   </div>
+   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+  <script>
+  function deleteElement(id) {
+    fetch(`/delete_table/${id}/`, {
+      method: 'DELETE',
+      headers: {
+        'X-CSRFToken': '{{ csrf_token }}',
+      },
+    })
+    .then(response => {
+      if (response.ok) {
+          const elementDiv = document.querySelector(`div[data-id="${id}"]`);
+          elementDiv.delete();
+        // Обновите список элементов на странице или выполните другие необходимые действия
+        // например, скрыть удаленный элемент с помощью JavaScript и CSS
+      } else {
+        console.error('Ошибка удаления элемента');
+      }
+    })
+    .catch(error => {
+      console.error('Произошла ошибка:', error);
+    });
+  }
+  function getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+    }
+
+  const deleteButtons = document.querySelectorAll('.button_delete');
+  deleteButtons.forEach(button => {
+    button.addEventListener('click', (event) => {
+      console.log('hi')
+      const elementDiv = event.target.closest('.table_element');
+      const elementId = elementDiv.dataset.id;
+
+      deleteElement(elementId);
+    });
+  });
+</script>
 
 {% endblock content %}
 

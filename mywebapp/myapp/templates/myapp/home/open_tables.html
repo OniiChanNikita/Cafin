@@ -158,7 +158,7 @@
 
                     <div class="row" style=" width: 100%; display: flex; justify-content: end">
                       <div class="form-group" style='margin: 5px;'>
-                        <button onclick="deleteElement({{ element.id }})" class="form-control-label button_delete"  style='border: none; outline: none; background-color: transparent; color: #f5365c; font-size: 10px' for="input-username">Delete</button>
+                        <button onclick="deleteElement({{ i.id }})" class="form-control-label button_delete"  style='border: none; outline: none; background-color: transparent; color: #f5365c; font-size: 10px' for="input-username">Delete</button>
                       </div>
                     </div>
                   </div>
@@ -180,7 +180,7 @@
           <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
           <script>
           function deleteElement(id) {
-            fetch(`/delete_element/${id}/`, {
+            fetch(`/delete_operating/${id}/`, {
               method: 'DELETE',
               headers: {
                 'X-CSRFToken': '{{ csrf_token }}',
@@ -211,7 +211,7 @@
             button.addEventListener('click', (event) => {
               const elementDiv = event.target.closest('.infinite-input-form');
               const elementId = elementDiv.dataset.id;
-
+              console.log(document.querySelector('#block_scroll').children.length)
               if (document.querySelector('#block_scroll').children.length>1){
                 deleteElement(elementId); // Вызываем функцию удаления элемента
               }

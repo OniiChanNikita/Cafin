@@ -44,16 +44,19 @@ def index(request):
 			procent_net_profit_by_month.append(all_percent_settlement)
 
 		current_datetime = timezone.now()
-		if financesettlement.filter(created_at__month=current_datetime.month).count() >= financesettlement.filter(created_at__month=current_datetime.month-1).count() and financesettlement.filter(created_at__month=current_datetime.month).count() != 0:
-			procent_since_last_month_sales = (1-(financesettlement.filter(created_at__month=current_datetime.month-1).count() / financesettlement.filter(created_at__month=current_datetime.month).count()))*100
-		else: 
-			procent_since_last_month_sales = -(financesettlement.filter(created_at__month=current_datetime.month).count() / financesettlement.filter(created_at__month=current_datetime.month-1).count())*100
+		if total_sales < 1:
+			if financesettlement.filter(created_at__month=current_datetime.month).count() >= financesettlement.filter(created_at__month=current_datetime.month-1).count() and financesettlement.filter(created_at__month=current_datetime.month).count() != 0:
+				procent_since_last_month_sales = (1-(financesettlement.filter(created_at__month=current_datetime.month-1).count() / financesettlement.filter(created_at__month=current_datetime.month).count()))*100
+			else: 
+				procent_since_last_month_sales = -(financesettlement.filter(created_at__month=current_datetime.month).count() / financesettlement.filter(created_at__month=current_datetime.month-1).count())*100
 
-		if financesettlement.filter(created_at__month=current_datetime.month).aggregate(all_percent=Avg('percent_net_profit'))['all_percent'] >= financesettlement.filter(created_at__month=current_datetime.month-1).aggregate(all_percent=Avg('percent_net_profit'))['all_percent'] and financesettlement.filter(created_at__month=current_datetime.month).aggregate(all_percent=Avg('percent_net_profit'))['all_percent'] != 0:
-			procent_since_last_month_net = (1-(financesettlement.filter(created_at__month=current_datetime.month-1).aggregate(all_percent=Avg('percent_net_profit'))['all_percent'] / financesettlement.filter(created_at__month=current_datetime.month).aggregate(all_percent=Avg('percent_net_profit'))['all_percent']))*100
-		else: 
-			procent_since_last_month_net = -(financesettlement.filter(created_at__month=current_datetime.month).aggregate(all_percent=Avg('percent_net_profit'))['all_percent'] / financesettlement.filter(created_at__month=current_datetime.month-1).aggregate(all_percent=Avg('percent_net_profit'))['all_percent'])*100
-
+			if financesettlement.filter(created_at__month=current_datetime.month).aggregate(all_percent=Avg('percent_net_profit'))['all_percent'] >= financesettlement.filter(created_at__month=current_datetime.month-1).aggregate(all_percent=Avg('percent_net_profit'))['all_percent'] and financesettlement.filter(created_at__month=current_datetime.month).aggregate(all_percent=Avg('percent_net_profit'))['all_percent'] != 0:
+				procent_since_last_month_net = (1-(financesettlement.filter(created_at__month=current_datetime.month-1).aggregate(all_percent=Avg('percent_net_profit'))['all_percent'] / financesettlement.filter(created_at__month=current_datetime.month).aggregate(all_percent=Avg('percent_net_profit'))['all_percent']))*100
+			else: 
+				procent_since_last_month_net = -(financesettlement.filter(created_at__month=current_datetime.month).aggregate(all_percent=Avg('percent_net_profit'))['all_percent'] / financesettlement.filter(created_at__month=current_datetime.month-1).aggregate(all_percent=Avg('percent_net_profit'))['all_percent'])*100
+		else:
+			procent_since_last_month_sales = 0
+			procent_since_last_month_net = 0
 
 		return render(request, 'myapp/home/index.html', {'admin_status': admin_status, 'total_sales':total_sales, 'all_percent': round(all_percent, 2),
 	 													'net_profit_by_month':net_profit_by_month, 'procent_net_profit_by_month': procent_net_profit_by_month,
@@ -197,6 +200,7 @@ def finance_tables(request):
 
 @login_required
 def open_finance_settlement(request, slug_financesettlement):
+
 	get_object_slug_financesettlement = get_object_or_404(FinanceSettlement, slug_financesettlement=slug_financesettlement)
 	get_obj = get_object_slug_financesettlement.input_values.all()
 	get_obj_avg = get_obj.aggregate(get_obj_avg=Avg('operating_expens'))['get_obj_avg']
@@ -212,11 +216,23 @@ def open_finance_settlement(request, slug_financesettlement):
 @login_required
 def delete_operating(request, element_id):
 	if request.method == 'DELETE':
+		print('s')
 		element = get_object_or_404(OperatingExpens, id=element_id)
 		element_perent = FinanceSettlement.objects.filter(username = request.user, input_values = element)
-
 		if element_perent.first().input_values.count()>1:
-			slug_before_deletion = element_perent.slug_financesettlement
+			slug_before_deletion = element_perent.first().slug_financesettlement
 			element.delete()
-			return redirect('open_finance_settlement', slug=slug_before_deletion)
+			return redirect('open_finance_settlement', slug_financesettlement=slug_before_deletion)
+	return redirect('index')
+
+
+@login_required
+def delete_table(request, element_id_table):
+	if request.method == 'DELETE':
+		element = get_object_or_404(FinanceSettlement, username = request.user, id=element_id_table)
+		element_input_values = element.input_values.all()
+		if element.username == request.user:
+			element_input_values.delete()
+			element.delete()
+			return redirect('finance_tables')
 	return redirect('index')

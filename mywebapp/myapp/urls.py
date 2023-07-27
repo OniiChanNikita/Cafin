@@ -12,5 +12,6 @@ urlpatterns = [
     path('create_finance_settlement/', views.create_finance_settlement, name='create_finance_settlement'),
     path('finance_tables/', views.finance_tables, name = 'finance_tables'),
     path('finance_tables/<slug:slug_financesettlement>/', views.open_finance_settlement, name = 'open_finance_settlement'),
+    path('delete_element/<int:element_id>/', views.delete_operating, name='delete_operating'),
 
 ]#  + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

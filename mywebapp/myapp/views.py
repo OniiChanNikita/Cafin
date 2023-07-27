@@ -209,4 +209,14 @@ def open_finance_settlement(request, slug_financesettlement):
 	return render(request, 'myapp/home/open_tables.html', {'get_obj': get_object_slug_financesettlement, 'get_expenses_obj': get_object_slug_financesettlement.input_values.all(),
 															 'get_obj_count': get_object_slug_financesettlement.input_values.all().count(), 'get_obj_avg': round(get_obj_avg, 2),
 															 'get_obj_avg_total_net': round(get_obj_avg_tn, 2)})
+@login_required
+def delete_operating(request, element_id):
+	if request.method == 'DELETE':
+		element = get_object_or_404(OperatingExpens, id=element_id)
+		element_perent = FinanceSettlement.objects.filter(username = request.user, input_values = element)
 
+		if element_perent.first().input_values.count()>1:
+			slug_before_deletion = element_perent.slug_financesettlement
+			element.delete()
+			return redirect('open_finance_settlement', slug=slug_before_deletion)
+	return redirect('index')

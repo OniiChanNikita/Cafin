@@ -3,6 +3,7 @@ from . import views
 from django.conf.urls.static import static
 
 urlpatterns = [
+
     path('', views.index, name='index'),
     path('login/', views.login_user, name='login'),
     path('register/', views.register_user, name='register'),
@@ -15,4 +16,6 @@ urlpatterns = [
     path('delete_operating/<int:element_id>/', views.delete_operating, name='delete_operating'),
     path('delete_table/<int:element_id_table>/', views.delete_table, name='delete_table'),
 
+    path('chat/', views.list_chat_box, name='list_chat_box'),
+    path('chat/<int:slug_num>/', views.chat_box, name='chat_box'),
 ]#  + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

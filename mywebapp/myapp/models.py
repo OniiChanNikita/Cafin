@@ -58,3 +58,21 @@ class FinanceSettlement(models.Model):
 
 	def __str__(self):
 		return self.username.username
+
+
+class MessageChat(models.Model):
+    user1 = models.CharField(max_length=215)
+    user2 = models.CharField(max_length=215)
+    message = models.JSONField(null=True)
+    slug_num = models.CharField(max_length=15)
+    date_public = models.DateTimeField(auto_now_add=True)
+    last_message = models.TextField(blank=True, null=True)
+    last_username = models.CharField(blank=True, null=True, max_length=215)
+
+    def __str__(self):
+        return self.slug_num
+
+    def get_absolute_url(self):
+        return reverse("chat_detail", args=[str(self.slug_num)])
+
+

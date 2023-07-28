@@ -1,0 +1,187 @@
+{% extends 'main_app/login.html' %}
+{% load static %}
+
+{% block content_form %}
+    <div class="box_center">
+        <div class="box">
+            <div class="chat_box">
+{% block chat_block %}
+                    <form method="post">
+        <div class="name_responser_chat">
+            <a href='{% url "profile" slug_profile=profile_get_obj_slug.slug_profile %}'>
+                {% if chat_box_ident.user1 != request.user.username %}
+                    {{ chat_box_ident.user1 }}
+                {% else %}
+                    {{ chat_box_ident.user2 }}
+                {% endif %}
+            </a>
+        </div>
+
+        <div class="chat_box_message">
+            <div class="form-control" id="chat-text" >
+                {% for messages in message_dict_json %}
+                    {% if messages.username == request.user.username %}
+                        <div class="message_container" id="ur_message">
+                    {% else %}
+                        <div class="message_container"  id="receive_message">
+                    {% endif %}
+                        {% if receive_user_logo %}
+                        <div style="display: flex; justify-content: flex-end; flex-direction: column; padding-bottom: 10px;"><img style="flex-shrink: 0; width: 30px; height: 30px"  src="{{receive_user_logo.url}}"></div>
+                        {% else %}
+                        <div style="display: flex; justify-content: flex-end; flex-direction: column; padding-bottom: 10px;"><img style="flex-shrink: 0; width: 30px; height: 30px" src="{% static 'main_app/default_logo/default_logo.png' %}"></div>
+                        {% endif %}
+
+                        {% if messages.username == request.user.username %}
+                            <div class="message_box" id="ur_message_box">
+                        {% else %}
+                            <div class="message_box" id="receive_message_box">
+                        {% endif %}
+
+
+                        {% for key, value in messages.items %}
+
+                            {% if key == 'username' %}
+                                <div id="name_messages">{{ value }}</div>
+                            {% endif %}
+                            {% if key == 'date_public' %}
+                                <div id="date_message">{{ value }}</div>
+                            {% endif %}
+                            {% if key == 'message' %}
+                                <div id="message_messages">{{ value }}</div>
+                            {% endif %}
+
+                        {% endfor %}
+                        </div>
+                    </div>
+                    <br>
+                {% endfor %}
+            </div><br>
+        </div>
+
+        <div class="input_message_box">
+            <input class="form-control" placeholder="Enter text here" id="input" type="text">
+            <input class="btn" id="submit" type="button" value="Enter">
+        </div>
+    </form>
+{% endblock chat_block %}
+        </div>
+    </div>
+</div>
+
+{% block script_block %}
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
+{{ request.user.username|json_script:"user_username" }}
+{{ chat_box_name|json_script:"room-name"}}
+<script>
+    function scrollToBottom() {
+        const chat_messages = document.querySelector(".chat_box_message");
+        chat_messages.scrollTop = chat_messages.scrollHeight;
+   }
+   scrollToBottom()
+    const chatSocket = new WebSocket(
+      'ws://' +
+      window.location.host +
+      '/chat/' +
+        '{{ chat_box_ident.slug_num }}' +
+      '/'
+    );
+    const user_username = JSON.parse(document.getElementById('user_username').textContent);
+    document.querySelector('#submit').onclick = function (e) {
+      const messageInputDom = document.querySelector('#input');
+      const message = messageInputDom.value;
+      chatSocket.send(JSON.stringify({
+          'message': message,
+          'username': user_username,
+      }));
+      messageInputDom.value = '';
+    };
+    const input = document.querySelector('#input')
+     $('#input').on('keypress', function(event){
+        if(event.keyCode === 13){
+            event.preventDefault();
+            const messageInputDom = document.querySelector('#input');
+            const message = messageInputDom.value;
+            chatSocket.send(JSON.stringify({
+              'message': message,
+              'username': user_username,
+            }));
+            messageInputDom.value = '';
+            }
+    });
+   chatSocket.onmessage = function (e) {
+        const user_username = JSON.parse(document.getElementById('user_username').textContent);
+        const data = JSON.parse(e.data);
+        const messageContainer = document.getElementById('chat-text');
+
+        const message_container = document.createElement('div');
+        const idt_message = document.createElement('div')
+        const message_box = document.createElement('div');
+        const name_box = document.createElement('div');
+        const logo_box = document.createElement('div');
+        const image_logo_box = document.createElement('img')
+        const message = document.createTextNode(data.message);
+        const username = document.createTextNode(data.username);
+        const br_box = document.createElement('br')
+
+        let currentDate = new Date();
+        const dateElement = document.createElement("div");
+        dateElement.id = 'date_message'
+        dateElement.innerHTML = currentDate.toDateString();
+
+        message_container.classList.add('message_container')
+        if (user_username === data.username) {
+            message_container.id = 'ur_message';
+            if ('{{ur_user_logo}}') {
+                '{% if ur_user_logo %}'
+                    image_logo_box.src = '{{ur_user_logo.url}}'
+                '{% endif %}'
+            } else{
+                console.log("{% static 'main_app/default_logo/default_logo.png' %}")
+
+                image_logo_box.src = "{% static 'main_app/default_logo/default_logo.png' %}"
+            }
+
+        } else {
+            message_container.id = 'receive_message';
+            if ('{{receive_user_logo}}'){
+                '{% if ur_user_logo %}'
+                    image_logo_box.src = '{{receive_user_logo.url}}'
+                '{% endif %}'
+            } else{
+                console.log("{% static 'main_app/default_logo/default_logo.png' %}")
+                image_logo_box.src = "{% static 'main_app/default_logo/default_logo.png' %}"
+            }
+        }
+
+        idt_message.classList.add('message_container');
+
+        idt_message.classList.add('message_box')
+        message_box.id = 'message_messages';
+        name_box.id = 'name_messages';
+        logo_box.style = 'display: flex; justify-content: flex-end; flex-direction: column; padding-bottom: 10px;';
+
+        image_logo_box.style = 'flex-shrink: 0; width: 30px; height: 30px';
+        
+
+        messageContainer.appendChild(message_container);
+        message_container.appendChild(logo_box);
+        message_container.appendChild(idt_message);
+        logo_box.appendChild(image_logo_box);
+        idt_message.appendChild(username);
+        idt_message.appendChild(message_box)
+        idt_message.appendChild(name_box);
+        idt_message.appendChild(dateElement)
+
+        name_box.appendChild(username)
+        message_box.appendChild(message)
+        messageContainer.appendChild(br_box)
+        console.log(data)
+        scrollToBottom()
+
+   }
+
+</script>
+
+
+{% endblock script_block %}
+{% endblock content_form %}

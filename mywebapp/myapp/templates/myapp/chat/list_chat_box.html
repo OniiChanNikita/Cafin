@@ -1,0 +1,48 @@
+{% extends 'myapp/layouts/base.html' %}
+{% load static %}
+{% block title %} Profile {% endblock title %}
+
+{% block content %}
+<div class="p-3" style="width: 100%">
+
+  <div class="input-group rounded mb-3">
+    <input type="search" class="form-control rounded" style="background-color: transparent;" placeholder="Search" aria-label="Search"
+      aria-describedby="search-addon" />
+    <span class="input-group-text border-0" style="background-color: transparent;" id="search-addon">
+      <i class="fas fa-search"></i>
+    </span>
+  </div>
+
+<div data-mdb-perfect-scrollbar="true" style="position: relative; height: 400px">
+
+    <ul class="list-unstyled mb-0">
+    {% for i in users %}
+    <li class="p-2 border-bottom">
+        <a href="{{i.slug_indetefication}}/" class="d-flex justify-content-between">
+          <div class="d-flex flex-row">
+            <div>
+            </div>
+            <div class="pt-1">
+              <p class="fw-bold mb-0">{{i.username}}</p>
+              <p class="small text-muted">Hello, Are you there?</p>
+            </div>
+          </div>
+          <div class="pt-1">
+            <p class="small text-muted mb-1">Just now</p>
+            <span class="badge bg-danger rounded-pill float-end">3</span>
+          </div>
+        </a>
+    </li>
+    {% endfor %}
+    </ul>
+</div>
+
+</div>
+
+{% endblock content %}
+
+
+<!-- Specific JS goes HERE --> 
+{% block javascripts %}{% endblock javascripts %}
+
+

@@ -70,6 +70,12 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'mywebapp.wsgi.application'
+ASGI_APPLICATION = "mywebapp.routing.application" #routing.py will be created later
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': "channels.layers.InMemoryChannelLayer"
+        }
+    }
 
 
 # Database

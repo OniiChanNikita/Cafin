@@ -45,6 +45,13 @@ class FinanceSettlement(models.Model):
 	input_values = models.ManyToManyField(OperatingExpens)
 	created_at = models.DateTimeField(default=timezone.now)
 	slug_financesettlement = models.SlugField(unique=True, null=True)
+	is_completed = models.CharField(null=True, max_length=5);
+
+	def make_complete(self):
+		self.is_completed = 'True'
+
+	def make_not_comlete(self):
+		self.is_completed = 'False'
 
 	def get_absolute_url_profile(self):
 		return reverse("open_finance_settlement", kwargs={"slug_financesettlement": self.slug_financesettlement}) 

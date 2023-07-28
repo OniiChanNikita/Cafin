@@ -29,7 +29,8 @@ def index(request):
 
 		total_sales=financesettlement.count()
 		all_percent = financesettlement.aggregate(all_percent=Avg('percent_net_profit'))['all_percent']
-		print(all_percent)
+		if all_percent == None:
+			all_percent = 0
 
 		net_profit_by_month = []
 		procent_net_profit_by_month = []
@@ -44,23 +45,28 @@ def index(request):
 			procent_net_profit_by_month.append(all_percent_settlement)
 
 		current_datetime = timezone.now()
-		if total_sales < 1:
-			if financesettlement.filter(created_at__month=current_datetime.month).count() >= financesettlement.filter(created_at__month=current_datetime.month-1).count() and financesettlement.filter(created_at__month=current_datetime.month).count() != 0:
+		if total_sales > 1:
+			if financesettlement.filter(created_at__month=current_datetime.month).count() >= financesettlement.filter(created_at__month=current_datetime.month-1).count() and financesettlement.filter(created_at__month=current_datetime.month).count() != 0 and financesettlement.filter(created_at__month=current_datetime.month-1).count() != 0:
 				procent_since_last_month_sales = (1-(financesettlement.filter(created_at__month=current_datetime.month-1).count() / financesettlement.filter(created_at__month=current_datetime.month).count()))*100
+				procent_since_last_month_sales = round(procent_since_last_month_sales, 2)
 			else: 
-				procent_since_last_month_sales = -(financesettlement.filter(created_at__month=current_datetime.month).count() / financesettlement.filter(created_at__month=current_datetime.month-1).count())*100
+				procent_since_last_month_sales = -(financesettlement.filter(created_at__month=current_datetime.month).count() / financesettlement.filter(created_at__month=current_datetime.month-1).count()*100)
+				procent_since_last_month_sales = round(procent_since_last_month_sales, 2)
 
-			if financesettlement.filter(created_at__month=current_datetime.month).aggregate(all_percent=Avg('percent_net_profit'))['all_percent'] >= financesettlement.filter(created_at__month=current_datetime.month-1).aggregate(all_percent=Avg('percent_net_profit'))['all_percent'] and financesettlement.filter(created_at__month=current_datetime.month).aggregate(all_percent=Avg('percent_net_profit'))['all_percent'] != 0:
+
+			if financesettlement.filter(created_at__month=current_datetime.month).aggregate(all_percent=Avg('percent_net_profit'))['all_percent'] >= financesettlement.filter(created_at__month=current_datetime.month-1).aggregate(all_percent=Avg('percent_net_profit'))['all_percent'] and financesettlement.filter(created_at__month=current_datetime.month).aggregate(all_percent=Avg('percent_net_profit'))['all_percent'] != 0 and financesettlement.filter(created_at__month=current_datetime.month-1).aggregate(all_percent=Avg('percent_net_profit'))['all_percent'] != 0:
 				procent_since_last_month_net = (1-(financesettlement.filter(created_at__month=current_datetime.month-1).aggregate(all_percent=Avg('percent_net_profit'))['all_percent'] / financesettlement.filter(created_at__month=current_datetime.month).aggregate(all_percent=Avg('percent_net_profit'))['all_percent']))*100
+				procent_since_last_month_net = round(procent_since_last_month_net, 2)
 			else: 
 				procent_since_last_month_net = -(financesettlement.filter(created_at__month=current_datetime.month).aggregate(all_percent=Avg('percent_net_profit'))['all_percent'] / financesettlement.filter(created_at__month=current_datetime.month-1).aggregate(all_percent=Avg('percent_net_profit'))['all_percent'])*100
+				procent_since_last_month_net = round(procent_since_last_month_net, 2)
+
 		else:
 			procent_since_last_month_sales = 0
 			procent_since_last_month_net = 0
-
 		return render(request, 'myapp/home/index.html', {'admin_status': admin_status, 'total_sales':total_sales, 'all_percent': round(all_percent, 2),
 	 													'net_profit_by_month':net_profit_by_month, 'procent_net_profit_by_month': procent_net_profit_by_month,
-	 													'procent_since_last_month_sales': round(procent_since_last_month_sales, 2), 'procent_since_last_month_net': round(procent_since_last_month_net, 2)})
+	 													'procent_since_last_month_sales': procent_since_last_month_sales, 'procent_since_last_month_net': procent_since_last_month_net})
 
 def register_user(request):
 	if not request.user.is_authenticated:

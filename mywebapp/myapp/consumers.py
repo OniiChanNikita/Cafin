@@ -5,7 +5,8 @@ from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncWebsocketConsumer
 from django.db import transaction
 
-from .models import MessageChat
+from .models import MessageChat, MessagerModel
+from django.contrib.auth.models import User
 from asgiref.sync import sync_to_async
 
 from datetime import datetime
@@ -16,21 +17,6 @@ class ChatRoomConsumer(AsyncWebsocketConsumer):
         self.chat_box_name = self.scope["url_route"]["kwargs"]["slug_num"]
         self.group_name = "chat_%s" % self.chat_box_name
         self.message_chat = await sync_to_async(MessageChat.objects.get)(slug_num=self.chat_box_name)
-
-        #if self.message_chat.message is not None:
-        #    for messages in self.message_chat.message:
-        #        message_dict = {messages['username']: messages['message']}
-        #        for username, message in message_dict.items():
-        #           if
-        #               await self.channel_layer.group_send(
-        #                    self.group_name,
-        #                    {
-        #                        "type": "chatbox_message",
-        #                       "username": username,
-        #                        "message": message,
-        #
-        #                    }
-        #                )
 
         # self.user = , self.user1
         # if MessageChat.objects.get()
@@ -45,15 +31,22 @@ class ChatRoomConsumer(AsyncWebsocketConsumer):
         text_data_json = json.loads(text_data)
         message = text_data_json["message"]
         username = text_data_json["username"]
-        # await MessageChat.objects.create
+        user_obj = await sync_to_async(User.objects.get)(username=username)
         if message is not None and message != '':
+                messager = await sync_to_async(MessagerModel.objects.create)(username=user_obj, message = message)
+                await sync_to_async(self.message_chat.user.add)(messager)
+                await database_sync_to_async(messager.save)()
+                await database_sync_to_async(self.message_chat.save)()
+                date_public = await sync_to_async(self.message_chat.user.filter)(username=user_obj)
+                date_public = await sync_to_async(date_public.order_by)('created_at')
+                date_public = await sync_to_async(date_public.first)()
                 await self.channel_layer.group_send(
                 self.group_name,
                 {
                     "type": "chatbox_message",
                     "username": username,
                     "message": message,
-                    "date_public": str(self.message_chat.date_public.strftime("%a %b %d %Y")) #('%Y.%m.%d %H:%M:%S')
+                    "date_public": str(date_public.created_at) #('%Y.%m.%d %H:%M:%S')
                 },
             )
 
@@ -61,34 +54,15 @@ class ChatRoomConsumer(AsyncWebsocketConsumer):
     async def chatbox_message(self, event):
         message = event["message"]
         username = event["username"]
+        date_public = event["date_public"]
+        await sync_to_async(print)(username)
         if message is not None and message != '':
-            if self.message_chat.message is None:
-                self.message_chat.message = [json.loads(json.dumps(
-                    {
-                        "message": message,
-                        "username": username,
-                        "date_public": str((datetime.now()).strftime('%a %b %d %Y')),
-                    }
-                ))]
-                self.message_chat.last_username = username
-                self.message_chat.last_message = message
-            else:
-                self.message_chat.message.append(json.loads(json.dumps(
-                    {
-                        "message": message,
-                        "username": username,
-                        "date_public": str((datetime.now()).strftime('%a %b %d %Y')),
-                    }
-                )))
-                self.message_chat.last_username = username
-                self.message_chat.last_message = message
-                await database_sync_to_async(self.message_chat.save)()
             await self.send(
                 text_data=json.dumps(
                     {
                         "message": message,
                         "username": username,
-                        "date_public": str((datetime.now()).strftime('%a %b %d %Y')),
+                        "date_public": date_public,
                         # self.message_chat.date_public.strftime("%a %b %d %Y")
                     }
                 )

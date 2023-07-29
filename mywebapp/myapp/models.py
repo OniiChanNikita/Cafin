@@ -59,20 +59,29 @@ class FinanceSettlement(models.Model):
 	def __str__(self):
 		return self.username.username
 
+class MessagerModel(models.Model):
+	username = models.ForeignKey(User, on_delete=models.CASCADE)
+	message = models.TextField(null=True)
+	created_at = models.DateTimeField(default=timezone.now)
+
+	def __str__(self):
+		return self.username.username
+
+# class MessageRecipient(models.Model):
+# 	username = models.ForeignKey(User, on_delete=models.CASCADE)
+# 	message = models.TextField(null = True)
+# 	created_at = models.DateTimeField(default=timezone.now)
 
 class MessageChat(models.Model):
-    user1 = models.CharField(max_length=215)
-    user2 = models.CharField(max_length=215)
-    message = models.JSONField(null=True)
-    slug_num = models.CharField(max_length=15)
-    date_public = models.DateTimeField(auto_now_add=True)
-    last_message = models.TextField(blank=True, null=True)
-    last_username = models.CharField(blank=True, null=True, max_length=215)
+	user1_search = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user1_chats')
+	user2_search = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user2_chats')
+	user = models.ManyToManyField(MessagerModel)
+	slug_num = models.CharField(max_length=15, unique=True)
 
-    def __str__(self):
-        return self.slug_num
+	def __str__(self):
+		return self.slug_num
 
-    def get_absolute_url(self):
-        return reverse("chat_detail", args=[str(self.slug_num)])
+	def get_absolute_url(self):
+		return reverse("chat_detail", args=[str(self.slug_num)])
 
 

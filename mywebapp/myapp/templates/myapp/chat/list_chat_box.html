@@ -13,12 +13,12 @@
     </span>
   </div>
 
-<div data-mdb-perfect-scrollbar="true" style="position: relative; height: 400px">
+<div data-mdb-perfect-scrollbar="true" style="position: relative;">
 
     <ul class="list-unstyled mb-0">
     {% for i in users %}
     <li class="p-2 border-bottom">
-        <a href="{{i.slug_indetefication}}/" class="d-flex justify-content-between">
+        <a href="{% url 'create_chat_or_redirect' slug_username=i.username %}" class="d-flex justify-content-between">
           <div class="d-flex flex-row">
             <div>
             </div>

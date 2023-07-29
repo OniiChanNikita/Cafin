@@ -8,7 +8,7 @@ django.setup()
 from channels.auth import AuthMiddlewareStack
 from channels.routing import ProtocolTypeRouter, URLRouter
 from django.urls import re_path
-from main_app import consumers
+from myapp import consumers
 
 
 

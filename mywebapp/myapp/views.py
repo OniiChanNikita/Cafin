@@ -6,10 +6,13 @@ from django.db.models import *
 from django.db.models.functions import ExtractMonth
 from .forms import *
 from django.forms.formsets import formset_factory
-import random
 from django.forms import modelformset_factory
 from django.utils import timezone
+import random
 
+def generate_random_number():
+    random_number = random.randrange(10**14, 10**15)
+    return random_number
 
 def specific_string(length): 
     sample_string = 'pqrstuvwxy' 
@@ -247,6 +250,8 @@ def delete_table(request, element_id_table):
 def list_chat_box(request):
 	# users = UserProfile.objects.filter(username = request.user)
 	users = UserProfile.objects.all()
+	for i in users:
+		print(i.id)
     # if request.user.is_authenticated:
     #     if request.method == 'POST':
     #         form = SearchUser(request.POST)
@@ -269,38 +274,50 @@ def list_chat_box(request):
     #         list_chat = MessageChat.objects.filter(Q(user1=request.user.username) | Q(user2=request.user.username))
 	return render(request, "myapp/chat/list_chat_box.html", {'users': users}) #'form_search': form, 'list_chat': list_chat
 
+
+def create_chat_or_redirect(request, slug_username):
+	user_obj = get_object_or_404(User, username=slug_username)
+	message_obj = MessageChat.objects.filter(Q(user1_search = User.objects.get(username = request.user.username), user2_search = User.objects.get(username = user_obj.username)) | Q(user1_search = User.objects.get(username = user_obj.username), user2_search = User.objects.get(username = request.user.username))).first()
+	print(message_obj)
+	if not message_obj:
+		print('ok')
+		messager1 = MessagerModel.objects.create(username = User.objects.get(username = request.user.username))
+		messager2 = MessagerModel.objects.create(username = user_obj)
+		MessagerModel.objects.create(username = request.user)
+		message = MessageChat.objects.create(user1_search = User.objects.get(username = request.user), user2_search = User.objects.get(username = user_obj.username),slug_num = generate_random_number())
+		message.user.add(messager1) 
+		message.user.add(messager2) 
+		return redirect('chat_box', slug_num = message.slug_num)
+	return redirect('chat_box', slug_num = message_obj.slug_num)
+
 @login_required
 def chat_box(request, slug_num):
-    get_obj_slug = get_object_or_404(MessageChat, slug_num=slug_num)
-    print(request.user.username, get_obj_slug.user1)
-    message_chat = MessageChat.objects.filter(
-        Q(user1=request.user.username, user2=get_obj_slug.user2) | Q(user1=get_obj_slug.user1,
-                                                                     user2=request.user.username)).first()
-    ur_user_logo = ProfileUser.objects.filter(username=request.user.username).first().logo_user
-    if get_obj_slug.user1 == request.user.username:
-        profile_get_obj_slug = ProfileUser.objects.get(username=get_obj_slug.user2)
-        receive_user_logo = ProfileUser.objects.filter(username=get_obj_slug.user2).first().logo_user
-    else:
-        profile_get_obj_slug = ProfileUser.objects.get(username=get_obj_slug.user1)
-        receive_user_logo = ProfileUser.objects.filter(username=get_obj_slug.user1).first().logo_user
-    message_dict = list(dict())
-    if message_chat is None and request.user.username != request.POST['username']:
-        print('so bad')
-    if message_chat.message is not None and message_chat.message != 'null':
-        for messages in message_chat.message:
-            message_dict.append({messages['username']: messages['message'], })
+	get_obj_slug = get_object_or_404(MessageChat, slug_num=slug_num)
+	print(get_obj_slug.slug_num)
 
-    print('message_dict--->', message_dict)
+# 	if get_obj_slug.user1_search == request.user:
+# 		receive = UserProfile.objects.get(username=get_obj_slug.user2_search)
+# # receive_user_logo = ProfileUser.objects.filter(username=get_obj_slug.user2).first().logo_user
+# 	else:
+# 		send = UserProfile.objects.get(username=get_obj_slug.user1_search)
+# # receive_user_logo = ProfileUser.objects.filter(username=get_obj_slug.user1).first().logo_user
 
-    # --------------
-    message_list = []
-    for i in message_dict:
-        message_list.append(i)
-    print('message_list--->', message_list)
-    # --------------
+	message_list = []
+    # if message_chat is None and request.user.username != request.POST['username']:
+	for messages in get_obj_slug.user.all():
+		if messages.message is not None:
+			message_list.append({messages.username: messages.message})
 
-    return render(request, "main_app/chat_box.html",
-                  {'chat_box_ident': get_obj_slug, 'profile_get_obj_slug':profile_get_obj_slug,
-                   'message_dict': message_dict,
-                   'message_dict_json': message_chat.message, 'ur_user_logo': ur_user_logo,
-                   'receive_user_logo': receive_user_logo})
+	return render(request, "myapp/chat/chat_box.html", {'get_obj_slug':get_obj_slug, 'messages': get_obj_slug.user.all()})
+
+    # # --------------
+    # for i in message_dict:
+    #     message_list.append(i)
+    # print('message_list--->', message_list)
+    # # --------------
+
+    # return render(request, "main_app/chat_box.html",
+    #               {'chat_box_ident': get_obj_slug, 'profile_get_obj_slug':profile_get_obj_slug,
+    #                'message_dict': message_dict,
+    #                'message_dict_json': message_chat.message, 'ur_user_logo': ur_user_logo,
+    #                'receive_user_logo': receive_user_logo})

@@ -1,88 +1,105 @@
-{% extends 'main_app/login.html' %}
+{% extends 'myapp/layouts/base.html' %}
 {% load static %}
 
-{% block content_form %}
-    <div class="box_center">
-        <div class="box">
-            <div class="chat_box">
-{% block chat_block %}
-                    <form method="post">
-        <div class="name_responser_chat">
-            <a href='{% url "profile" slug_profile=profile_get_obj_slug.slug_profile %}'>
-                {% if chat_box_ident.user1 != request.user.username %}
-                    {{ chat_box_ident.user1 }}
-                {% else %}
-                    {{ chat_box_ident.user2 }}
-                {% endif %}
-            </a>
-        </div>
+{% block content %}
+<style>
 
-        <div class="chat_box_message">
-            <div class="form-control" id="chat-text" >
-                {% for messages in message_dict_json %}
-                    {% if messages.username == request.user.username %}
-                        <div class="message_container" id="ur_message">
-                    {% else %}
-                        <div class="message_container"  id="receive_message">
-                    {% endif %}
-                        {% if receive_user_logo %}
-                        <div style="display: flex; justify-content: flex-end; flex-direction: column; padding-bottom: 10px;"><img style="flex-shrink: 0; width: 30px; height: 30px"  src="{{receive_user_logo.url}}"></div>
-                        {% else %}
-                        <div style="display: flex; justify-content: flex-end; flex-direction: column; padding-bottom: 10px;"><img style="flex-shrink: 0; width: 30px; height: 30px" src="{% static 'main_app/default_logo/default_logo.png' %}"></div>
-                        {% endif %}
+    #input_button_chat{
+        padding: 0 !important;
+        margin: 0 !important;
+        background-color: #f7fafc;
+        position: fixed;
+        width: calc(100% - 280px);
+        transition: transform 0.2s ease-in-out;
+        bottom: 0;
+        display: flex;
+        justify-content: center;
+    }
+    @media (max-width: 1199.98px){
+        #input_button_chat{
+            width: calc(100% - 30px);;
+        }
+    }
+    ::-webkit-scrollbar {
+        width: 8px; /* Ширина полосы прокрутки */
+    }
 
-                        {% if messages.username == request.user.username %}
-                            <div class="message_box" id="ur_message_box">
-                        {% else %}
-                            <div class="message_box" id="receive_message_box">
-                        {% endif %}
+    ::scrollbar-track {
+      background-color: transparent; /* Прозрачный фон трека */
+    }
 
+    ::-webkit-scrollbar-thumb {
+      background-color: rgba(0, 0, 0, 0.5); /* Цвет ползунка с прозрачностью */
+      border-radius: 4px; /* Скругление углов ползунка */
+    }
 
-                        {% for key, value in messages.items %}
+    ::-webkit-scrollbar-thumb:hover {
+      background-color: rgba(0, 0, 0, 0.7); /* Цвет ползунка при наведении с прозрачностью */
+    }
+</style>
+<form method = 'post' class="col-md-6 col-lg-7 col-xl-8 chat_box_message" style = 'max-width: 100%; position: relative; '>
+    {% csrf_token %}
+    <div id = 'block_add_message' class="pt-3 pe-3" data-mdb-perfect-scrollbar="true"
+      style="position: relative; margin-bottom: calc(2.25em + 1.25rem + 5px);">
+      {% for message in messages %}
+          {% if message.message != None and message.message != '' %}
+          {% if message.username != request.user %}
+          <div class="d-flex flex-row justify-content-start">
+            <!-- <img src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava6-bg.webp"
+              alt="avatar 1" style="width: 45px; height: 100%;"> -->
+            <div>
+              <p class="small ms-3 mb-3 rounded-3 text-muted"  style="margin: 0 !important">{{message.username}}</p>
+              <p class="small p-2 ms-3 mb-1 rounded-3" style="background-color: #f5f6f7;">{{message.message}}</p>
+              <p class="small ms-3 mb-3 rounded-3 text-muted float-end">{{message.created_at}}</p>
+            </div>
+          </div>
+          {% elif message.username != request.user %}
+          {% else %}
+          <div class="d-flex flex-row justify-content-end">
+            <div>
+              <p class="small ms-3 mb-3 rounded-3 text-muted float-end" style="margin: 0 !important">{{message.username}}</p>
+              <p class="small p-2 me-3 mb-1 text-white rounded-3 bg-primary">{{message.message}}</p>
+              <p class="small me-3 mb-3 rounded-3 text-muted">{{message.created_at}}</p> <!-- 12:00 PM | Aug 13 -->
+            </div>
+            <!-- <img src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava1-bg.webp"
+              alt="avatar 1" style="width: 45px; height: 100%;"> -->
+          </div>
+          {% endif %}
+      {% endif %}
+      {% endfor %}
+      
+    </div>
+    
 
-                            {% if key == 'username' %}
-                                <div id="name_messages">{{ value }}</div>
-                            {% endif %}
-                            {% if key == 'date_public' %}
-                                <div id="date_message">{{ value }}</div>
-                            {% endif %}
-                            {% if key == 'message' %}
-                                <div id="message_messages">{{ value }}</div>
-                            {% endif %}
-
-                        {% endfor %}
-                        </div>
-                    </div>
-                    <br>
-                {% endfor %}
-            </div><br>
-        </div>
-
-        <div class="input_message_box">
-            <input class="form-control" placeholder="Enter text here" id="input" type="text">
-            <input class="btn" id="submit" type="button" value="Enter">
-        </div>
-    </form>
-{% endblock chat_block %}
-        </div>
+<div id = 'input_button_chat' class="text-muted d-flex justify-content-start align-items-center pe-3 pt-3 mt-2" >
+    <div class="text-muted d-flex justify-content-start align-items-center pe-3 pt-3 mt-2"  style=" width: 100% !important; padding: 0 !important; margin: 0;">
+      <img src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava6-bg.webp"
+        alt="avatar 3" style="width: 40px; height: 100%;">
+      <input id = 'input' type="text" class="form-control form-control-lg" id="exampleFormControlInput2"
+        placeholder="Type message">
+      <a class="ms-1 text-muted" href="#!"><i class="fas fa-paperclip"></i></a>
+      <a class="ms-3 text-muted" href="#!"><i class="fas fa-smile"></i></a>
+      <a id = 'submit' type="button" class="ms-3" ><i class="fas fa-paper-plane"></i></a>
     </div>
 </div>
+</form>
 
 {% block script_block %}
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
 {{ request.user.username|json_script:"user_username" }}
 {{ chat_box_name|json_script:"room-name"}}
 <script>
+    window.scrollTo(0, document.body.scrollHeight);
     function scrollToBottom() {
         const chat_messages = document.querySelector(".chat_box_message");
         chat_messages.scrollTop = chat_messages.scrollHeight;
-   }
-   scrollToBottom()
+    }
+    scrollToBottom()
     const chatSocket = new WebSocket(
       'ws://' +
       window.location.host +
       '/chat/' +
-        '{{ chat_box_ident.slug_num }}' +
+        '{{get_obj_slug.slug_num}}' +
       '/'
     );
     const user_username = JSON.parse(document.getElementById('user_username').textContent);
@@ -108,80 +125,26 @@
             messageInputDom.value = '';
             }
     });
-   chatSocket.onmessage = function (e) {
-        const user_username = JSON.parse(document.getElementById('user_username').textContent);
-        const data = JSON.parse(e.data);
-        const messageContainer = document.getElementById('chat-text');
+    chatSocket.onmessage = function (e) {
+        console.log('get')
 
-        const message_container = document.createElement('div');
-        const idt_message = document.createElement('div')
-        const message_box = document.createElement('div');
-        const name_box = document.createElement('div');
-        const logo_box = document.createElement('div');
-        const image_logo_box = document.createElement('img')
-        const message = document.createTextNode(data.message);
-        const username = document.createTextNode(data.username);
-        const br_box = document.createElement('br')
-
+        const data = JSON.parse(e.data)
         let currentDate = new Date();
-        const dateElement = document.createElement("div");
-        dateElement.id = 'date_message'
-        dateElement.innerHTML = currentDate.toDateString();
+        let originalElement = document.querySelector("#block_add_message");
+        let container = document.getElementById("block_add_message");
 
-        message_container.classList.add('message_container')
-        if (user_username === data.username) {
-            message_container.id = 'ur_message';
-            if ('{{ur_user_logo}}') {
-                '{% if ur_user_logo %}'
-                    image_logo_box.src = '{{ur_user_logo.url}}'
-                '{% endif %}'
-            } else{
-                console.log("{% static 'main_app/default_logo/default_logo.png' %}")
-
-                image_logo_box.src = "{% static 'main_app/default_logo/default_logo.png' %}"
-            }
-
-        } else {
-            message_container.id = 'receive_message';
-            if ('{{receive_user_logo}}'){
-                '{% if ur_user_logo %}'
-                    image_logo_box.src = '{{receive_user_logo.url}}'
-                '{% endif %}'
-            } else{
-                console.log("{% static 'main_app/default_logo/default_logo.png' %}")
-                image_logo_box.src = "{% static 'main_app/default_logo/default_logo.png' %}"
-            }
-        }
-
-        idt_message.classList.add('message_container');
-
-        idt_message.classList.add('message_box')
-        message_box.id = 'message_messages';
-        name_box.id = 'name_messages';
-        logo_box.style = 'display: flex; justify-content: flex-end; flex-direction: column; padding-bottom: 10px;';
-
-        image_logo_box.style = 'flex-shrink: 0; width: 30px; height: 30px';
+        let copiedElement = originalElement.firstElementChild.cloneNode(true);
         
+        copiedElement.querySelector(".text-muted").textContent = data.username;
+        copiedElement.querySelector(".bg-primary").textContent = data.message;
+        copiedElement.querySelector(".text-muted:last-child").textContent = currentDate.toDateString();
 
-        messageContainer.appendChild(message_container);
-        message_container.appendChild(logo_box);
-        message_container.appendChild(idt_message);
-        logo_box.appendChild(image_logo_box);
-        idt_message.appendChild(username);
-        idt_message.appendChild(message_box)
-        idt_message.appendChild(name_box);
-        idt_message.appendChild(dateElement)
-
-        name_box.appendChild(username)
-        message_box.appendChild(message)
-        messageContainer.appendChild(br_box)
-        console.log(data)
-        scrollToBottom()
-
+        container.appendChild(copiedElement);
+        window.scrollTo(0, document.body.scrollHeight);
    }
 
 </script>
 
 
 {% endblock script_block %}
-{% endblock content_form %}
+{% endblock content %}

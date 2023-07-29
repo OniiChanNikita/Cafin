@@ -2,6 +2,8 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
 from django.urls import reverse
+from django.db.models.signals import m2m_changed
+from django.dispatch import receiver
 
 class UserProfile(models.Model):
 	username = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -63,6 +65,7 @@ class MessagerModel(models.Model):
 	username = models.ForeignKey(User, on_delete=models.CASCADE)
 	message = models.TextField(null=True)
 	created_at = models.DateTimeField(default=timezone.now)
+	is_read = models.BooleanField(default=False)
 
 	def __str__(self):
 		return self.username.username
@@ -77,6 +80,10 @@ class MessageChat(models.Model):
 	user2_search = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user2_chats')
 	user = models.ManyToManyField(MessagerModel)
 	slug_num = models.CharField(max_length=15, unique=True)
+	last_message = models.ForeignKey(MessagerModel, null=True, blank=True, on_delete=models.SET_NULL, related_name='+')
+	is_read_num_user1 = models.IntegerField(default=0)
+	is_read_num_user2 = models.IntegerField(default=0)
+
 
 	def __str__(self):
 		return self.slug_num
@@ -85,3 +92,13 @@ class MessageChat(models.Model):
 		return reverse("chat_detail", args=[str(self.slug_num)])
 
 
+@receiver(m2m_changed, sender=MessageChat.user.through)
+def update_last_message(sender, instance, action, reverse, model, pk_set, **kwargs):
+	if action == 'post_add':
+		if pk_set:
+			last_message_id = max(pk_set)
+			instance.last_message_id = last_message_id
+			instance.save()
+	instance.is_read_num_user1 = instance.user.filter(username=instance.user1_search, is_read=False).count()
+	instance.is_read_num_user2 = instance.user.filter(username=instance.user2_search, is_read=False).count()
+	instance.save()

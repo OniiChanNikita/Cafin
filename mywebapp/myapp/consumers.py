@@ -33,7 +33,7 @@ class ChatRoomConsumer(AsyncWebsocketConsumer):
         username = text_data_json["username"]
         user_obj = await sync_to_async(User.objects.get)(username=username)
         if message is not None and message != '':
-                messager = await sync_to_async(MessagerModel.objects.create)(username=user_obj, message = message)
+                messager = await sync_to_async(MessagerModel.objects.create)(username=user_obj, message = message, is_read=False)
                 await sync_to_async(self.message_chat.user.add)(messager)
                 await database_sync_to_async(messager.save)()
                 await database_sync_to_async(self.message_chat.save)()

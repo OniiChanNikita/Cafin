@@ -18,18 +18,31 @@
     <ul class="list-unstyled mb-0">
     {% for i in users %}
     <li class="p-2 border-bottom">
-        <a href="{% url 'create_chat_or_redirect' slug_username=i.username %}" class="d-flex justify-content-between">
+        {% if i.user1_search == request.user %}
+        <a href="{% url 'create_chat_or_redirect' slug_username=i.user2_search.username %}" class="d-flex justify-content-between">
+        {% else %}
+        <a href="{% url 'create_chat_or_redirect' slug_username=i.user1_search.username %}" class="d-flex justify-content-between">
+        {% endif %}
           <div class="d-flex flex-row">
             <div>
             </div>
             <div class="pt-1">
-              <p class="fw-bold mb-0">{{i.username}}</p>
-              <p class="small text-muted">Hello, Are you there?</p>
+            {% if i.user1_search == request.user %}
+              <p class="fw-bold mb-0">{{i.user2_search.username}}</p>
+            {% else %}
+              <p class="fw-bold mb-0">{{i.user1_search.username}}</p>
+            {% endif %}
+              <p class="small text-muted">{{i.last_message.message}}</p>
             </div>
           </div>
           <div class="pt-1">
-            <p class="small text-muted mb-1">Just now</p>
-            <span class="badge bg-danger rounded-pill float-end">3</span>
+            <p class="small text-muted mb-1" >Just now</p>
+            {% if i.user1_search == request.user %}
+            <span class="badge bg-danger rounded-pill float-end" style='color: white !important;'>{{i.is_read_num_user2}}</span>
+            {% else %}
+            <span class="badge bg-danger rounded-pill float-end" style='color: white !important;'>{{i.is_read_num_user1}}</span>
+            {% endif %}
+
           </div>
         </a>
     </li>

@@ -130,15 +130,19 @@
 
         const data = JSON.parse(e.data)
         let currentDate = new Date();
-        let originalElement = document.querySelector("#block_add_message");
+        let originalElement = document.querySelector(".justify-content-end");
         let container = document.getElementById("block_add_message");
 
-        let copiedElement = originalElement.firstElementChild.cloneNode(true);
-        
-        copiedElement.querySelector(".text-muted").textContent = data.username;
-        copiedElement.querySelector(".bg-primary").textContent = data.message;
-        copiedElement.querySelector(".text-muted:last-child").textContent = currentDate.toDateString();
 
+        let copiedElement = originalElement.firstElement.cloneNode(true);
+        if (copiedElement){
+          copiedElement.querySelector(".text-muted").textContent = data.username;
+          copiedElement.querySelector(".bg-primary").textContent = data.message;
+          copiedElement.querySelector(".text-muted:last-child").textContent = currentDate.toDateString();
+        }else{
+          
+        }
+        
         container.appendChild(copiedElement);
         window.scrollTo(0, document.body.scrollHeight);
    }

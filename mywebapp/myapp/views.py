@@ -249,29 +249,7 @@ def delete_table(request, element_id_table):
 @login_required
 def list_chat_box(request):
 	# users = UserProfile.objects.filter(username = request.user)
-	users = UserProfile.objects.all()
-	for i in users:
-		print(i.id)
-    # if request.user.is_authenticated:
-    #     if request.method == 'POST':
-    #         form = SearchUser(request.POST)
-    #         if form.is_valid():
-    #             list_chat = MessageChat.objects.filter(Q(user1=request.user.username) | Q(user2=request.user.username))
-    #             if ProfileUser.objects.filter(username = request.POST['username']).first() != None:
-    #                 if request.user.username != request.POST['username']:
-    #                     if MessageChat.objects.filter(Q(user1=request.user.username, user2=request.POST['username']) | Q(user1=request.POST['username'], user2=request.user.username)).first() != None:
-    #                         list_chat = MessageChat.objects.filter(Q(user1=request.user.username, user2=request.POST['username']) | Q(user1=request.POST['username'], user2=request.user.username))
-    #                     else:
-    #                         print('create_message')
-    #                         MessageChat.objects.create(user1=request.user.username, user2=request.POST['username'], slug_num=random_nums())
-    #                         list_chat = MessageChat.objects.filter(Q(user1=request.user.username) | Q(user2=request.user.username))
-
-                
-    #             return render(request, "main_app/list_chat_box.html", {'form_search': form,
-    #                                                            'list_chat': list_chat})
-    #     else:
-    #         form = SearchUser()
-    #         list_chat = MessageChat.objects.filter(Q(user1=request.user.username) | Q(user2=request.user.username))
+	users = MessageChat.objects.filter(Q(user1_search = User.objects.get(username = request.user.username)) | Q(user2_search = User.objects.get(username = request.user.username)))
 	return render(request, "myapp/chat/list_chat_box.html", {'users': users}) #'form_search': form, 'list_chat': list_chat
 
 
@@ -293,31 +271,19 @@ def create_chat_or_redirect(request, slug_username):
 @login_required
 def chat_box(request, slug_num):
 	get_obj_slug = get_object_or_404(MessageChat, slug_num=slug_num)
+	for messages in get_obj_slug.user.filter(username = get_obj_slug.user1_search):
+		if messages.username != request.user:
+			messages.is_read = True
+	if get_obj_slug.user1_search == request.user:
+		
+		get_obj_slug.is_read_num_user1 = 0
+
+	else:
+		get_obj_slug.is_read_num_user2 = 0
 	print(get_obj_slug.slug_num)
-
-# 	if get_obj_slug.user1_search == request.user:
-# 		receive = UserProfile.objects.get(username=get_obj_slug.user2_search)
-# # receive_user_logo = ProfileUser.objects.filter(username=get_obj_slug.user2).first().logo_user
-# 	else:
-# 		send = UserProfile.objects.get(username=get_obj_slug.user1_search)
-# # receive_user_logo = ProfileUser.objects.filter(username=get_obj_slug.user1).first().logo_user
-
 	message_list = []
-    # if message_chat is None and request.user.username != request.POST['username']:
 	for messages in get_obj_slug.user.all():
 		if messages.message is not None:
 			message_list.append({messages.username: messages.message})
 
 	return render(request, "myapp/chat/chat_box.html", {'get_obj_slug':get_obj_slug, 'messages': get_obj_slug.user.all()})
-
-    # # --------------
-    # for i in message_dict:
-    #     message_list.append(i)
-    # print('message_list--->', message_list)
-    # # --------------
-
-    # return render(request, "main_app/chat_box.html",
-    #               {'chat_box_ident': get_obj_slug, 'profile_get_obj_slug':profile_get_obj_slug,
-    #                'message_dict': message_dict,
-    #                'message_dict_json': message_chat.message, 'ur_user_logo': ur_user_logo,
-    #                'receive_user_logo': receive_user_logo})

@@ -89,6 +89,8 @@
 {{ request.user.username|json_script:"user_username" }}
 {{ chat_box_name|json_script:"room-name"}}
 <script>
+    const container = document.getElementById("block_add_message");
+
     window.scrollTo(0, document.body.scrollHeight);
     function scrollToBottom() {
         const chat_messages = document.querySelector(".chat_box_message");
@@ -130,20 +132,42 @@
 
         const data = JSON.parse(e.data)
         let currentDate = new Date();
-        let originalElement = document.querySelector(".justify-content-end");
-        let container = document.getElementById("block_add_message");
-
-
-        let copiedElement = originalElement.firstElement.cloneNode(true);
-        if (copiedElement){
-          copiedElement.querySelector(".text-muted").textContent = data.username;
-          copiedElement.querySelector(".bg-primary").textContent = data.message;
-          copiedElement.querySelector(".text-muted:last-child").textContent = currentDate.toDateString();
+        const options = { 
+          year: 'numeric', 
+          month: 'long', 
+          day: 'numeric', 
+          hour: 'numeric', 
+          minute: 'numeric', 
+          hour12: true 
+        };
+        const formattedDate = currentDate.toLocaleString('en-US', options);
+        let main_div = document.createElement("div");
+        let div_child = document.createElement('div')
+        let p_name = document.createElement('p')
+        let p_message = document.createElement('p')
+        let p_date = document.createElement('p')
+        if (data.username == '{{request.user}}'){
+          main_div.classList.add("d-flex", "flex-row", "justify-content-end");
+          p_name.classList.add("small", "ms-3", "mb-3", "rounded-3", "text-muted", "float-end")
+          p_name.style.margin = "margin: 0 !important;"
+          p_message.classList.add("small", "p-2", "me-3", "mb-1", "text-white", "rounded-3", "bg-primary")
+          p_date.classList.add("small", "me-3", "mb-3", "rounded-3", "text-muted")
         }else{
-          
+          main_div.classList.add("d-flex", "flex-row", "justify-content-start");
+          p_name.classList.add("small", "ms-3", "mb-3", "rounded-3", "text-muted")
+          p_name.style.margin = "margin: 0 !important;"
+          p_message.classList.add("small", "p-2", "ms-3", "mb-1", "rounded-3")
+          p_date.classList.add("small", "ms-3", "mb-3", "rounded-3", "text-muted", 'float-end')
         }
-        
-        container.appendChild(copiedElement);
+        p_name.textContent =(data.username)
+        p_message.textContent =(data.message)
+        p_date.textContent =(formattedDate)
+        container.appendChild(main_div)
+        main_div.appendChild(div_child)
+        div_child.appendChild(p_name)
+        div_child.appendChild(p_message)
+        div_child.appendChild(p_date)
+        console.log('{{request.user}}')
         window.scrollTo(0, document.body.scrollHeight);
    }
 

@@ -24,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-%sdxr8e=i8v#2!twjigbf%yg3e&yl0b7wm-g--zj(#xsq=p_mj'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['main--delightful-kleicha-1bc963.netlify.app', '127.0.0.1', '.netlify.app']
 
@@ -70,7 +70,7 @@ TEMPLATES = [
     },
 ]
 
-# WSGI_APPLICATION = 'mywebapp.wsgi.application'
+WSGI_APPLICATION = 'mywebapp.wsgi.application'
 ASGI_APPLICATION = "mywebapp.routing.application" #routing.py will be created later
 CHANNEL_LAYERS = {
     'default': {
@@ -124,11 +124,14 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-STATIC_URL = '/static/'
-# STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+STATIC_URL = 'static/'
+if DEBUG == True:
+    STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+else:
+    STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+

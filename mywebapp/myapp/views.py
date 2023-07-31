@@ -10,14 +10,25 @@ from django.forms import modelformset_factory
 from django.utils import timezone
 import random
 
-def generate_random_number():
-    random_number = random.randrange(10**14, 10**15)
-    return random_number
+def page_not_found_view(request, exception):
+	return render(request, 'myapp/home/page-404.html', status=404)
+
+def permission_denied_view(request, exception):
+	return render(request, 'myapp/home/page-403.html', status=403)
+
+def server_error_view(request):
+	return render(request, 'myapp/home/page-500.html', status=500)
 
 def specific_string(length): 
     sample_string = 'pqrstuvwxy' 
     result = ''.join((random.choice(sample_string)) for x in range(length)) 
     return result
+
+def generate_random_number():
+    random_number = random.randrange(10**14, 10**15)
+    return random_number
+
+
 
 def index(request):
 	if not request.user.is_authenticated:
@@ -67,9 +78,12 @@ def index(request):
 		else:
 			procent_since_last_month_sales = 0
 			procent_since_last_month_net = 0
+
+		users = MessageChat.objects.filter(Q(user1_search = User.objects.get(username = request.user.username), is_read_num_user2__gt=0) | Q(user2_search = User.objects.get(username = request.user.username), is_read_num_user1__gt=0))
 		return render(request, 'myapp/home/index.html', {'admin_status': admin_status, 'total_sales':total_sales, 'all_percent': round(all_percent, 2),
 	 													'net_profit_by_month':net_profit_by_month, 'procent_net_profit_by_month': procent_net_profit_by_month,
-	 													'procent_since_last_month_sales': procent_since_last_month_sales, 'procent_since_last_month_net': procent_since_last_month_net})
+	 													'procent_since_last_month_sales': procent_since_last_month_sales, 'procent_since_last_month_net': procent_since_last_month_net,
+	 													"message_notice": MessageChat.objects.filter(Q(user1_search = User.objects.get(username = request.user.username), is_read_num_user2__gt=0) | Q(user2_search = User.objects.get(username = request.user.username), is_read_num_user1__gt=0))})
 
 def register_user(request):
 	if not request.user.is_authenticated:
@@ -151,10 +165,12 @@ def profile(request):
 			user_profile.postal_code = postal_code
 
 			user_profile.save()
-			return render(request, 'myapp/home/profile.html', {'edit_form': edit_form, 'user_profile': user_profile})
+			return render(request, 'myapp/home/profile.html', {'edit_form': edit_form, 'user_profile': user_profile,
+				"message_notice": MessageChat.objects.filter(Q(user1_search = User.objects.get(username = request.user.username), is_read_num_user2__gt=0) | Q(user2_search = User.objects.get(username = request.user.username), is_read_num_user1__gt=0))})
 	else:
 		edit_form=ProfileEditForm()
-	return render(request, 'myapp/home/profile.html', {'edit_form': edit_form, 'user_profile': user_profile})
+	return render(request, 'myapp/home/profile.html', {'edit_form': edit_form, 'user_profile': user_profile,
+	"message_notice": MessageChat.objects.filter(Q(user1_search = User.objects.get(username = request.user.username), is_read_num_user2__gt=0) | Q(user2_search = User.objects.get(username = request.user.username), is_read_num_user1__gt=0))})
 
 @login_required
 def create_finance_settlement(request):
@@ -200,7 +216,8 @@ def create_finance_settlement(request):
 	else:
 		form = FormCreateSettlement()
 		formset = InfiniteInputFormSet(queryset=OperatingExpens.objects.none())
-	return render(request, 'myapp/home/create_finance_settlement.html',  {'form': form, 'formset': formset})
+	return render(request, 'myapp/home/create_finance_settlement.html',  {'form': form, 'formset': formset,
+		"message_notice": MessageChat.objects.filter(Q(user1_search = User.objects.get(username = request.user.username), is_read_num_user2__gt=0) | Q(user2_search = User.objects.get(username = request.user.username), is_read_num_user1__gt=0))})
 
 @login_required
 def finance_tables(request):
@@ -221,7 +238,8 @@ def open_finance_settlement(request, slug_financesettlement):
 		get_obj_avg_tn = (1-(get_obj_avg_total/get_obj_avg_net))*100
 	return render(request, 'myapp/home/open_tables.html', {'get_obj': get_object_slug_financesettlement, 'get_expenses_obj': get_object_slug_financesettlement.input_values.all(),
 															 'get_obj_count': get_object_slug_financesettlement.input_values.all().count(), 'get_obj_avg': round(get_obj_avg, 2),
-															 'get_obj_avg_total_net': round(get_obj_avg_tn, 2)})
+															 'get_obj_avg_total_net': round(get_obj_avg_tn, 2),
+															 "message_notice": MessageChat.objects.filter(Q(user1_search = User.objects.get(username = request.user.username), is_read_num_user2__gt=0) | Q(user2_search = User.objects.get(username = request.user.username), is_read_num_user1__gt=0))})
 @login_required
 def delete_operating(request, element_id):
 	if request.method == 'DELETE':
@@ -247,10 +265,58 @@ def delete_table(request, element_id_table):
 	return redirect('index')
 
 @login_required
+def modify_table(request, slug_financesettlement):
+	element = get_object_or_404(FinanceSettlement, slug_financesettlement=slug_financesettlement)
+	InfiniteInputFormSet = modelformset_factory(OperatingExpens, extra=1, fields=('name_operating_expense', 'operating_expens'))
+	if request.method == 'POST':
+		form = FormCreateSettlement(request.POST)
+		formset = InfiniteInputFormSet(request.POST)
+		print(form.is_valid(), formset.is_valid())
+		if form.is_valid() and formset.is_valid():
+			querty_list = []
+			not_net_profit = 0
+			user = User.objects.get(username=request.user.username)
+
+			financial_identity_name = request.POST['financial_identity_name_form']
+			net_profit = request.POST['net_profit_form']
+			total_attachment = request.POST['total_attachment_form']
+
+			for f_form in formset:
+				if f_form.is_valid() and f_form.has_changed():
+					f_form.username = user
+					f_form.save()
+					print(f_form.cleaned_data['operating_expens'])
+					operating_expense = OperatingExpens.objects.filter(operating_expens = f_form.cleaned_data['operating_expens'],
+																		name_operating_expense =  f_form.cleaned_data['name_operating_expense']).first()
+					if operating_expense:
+						operating_expense.username = request.user
+						operating_expense.save()
+					not_net_profit+=f_form.cleaned_data['operating_expens']
+					querty_list.append(operating_expense)
+			percent_net_profit = -(int(net_profit)/int(not_net_profit))*100
+			if int(not_net_profit)<int(net_profit):
+				percent_net_profit = (1-(int(not_net_profit)/int(net_profit)))*100
+			finance_settlement = FinanceSettlement.objects.get(
+				slug_financesettlement=element.slug_financesettlement,
+			)
+			finance_settlement.financial_identity_name = financial_identity_name
+			finance_settlement.net_profit = net_profit
+			finance_settlement.total_attachment = total_attachment
+			finance_settlement.percent_net_profit = percent_net_profit
+			finance_settlement.input_values.add(*querty_list)
+			finance_settlement.save()
+	else:
+		form = FormCreateSettlement()
+		formset = InfiniteInputFormSet(queryset=OperatingExpens.objects.none())
+	return render(request, 'myapp/home/create_finance_settlement.html',  {'form': form, 'formset': formset,
+		"message_notice": MessageChat.objects.filter(Q(user1_search = User.objects.get(username = request.user.username), is_read_num_user2__gt=0) | Q(user2_search = User.objects.get(username = request.user.username), is_read_num_user1__gt=0)), 'element_modify': element})
+
+@login_required
 def list_chat_box(request):
 	# users = UserProfile.objects.filter(username = request.user)
 	users = MessageChat.objects.filter(Q(user1_search = User.objects.get(username = request.user.username)) | Q(user2_search = User.objects.get(username = request.user.username)))
-	return render(request, "myapp/chat/list_chat_box.html", {'users': users}) #'form_search': form, 'list_chat': list_chat
+	return render(request, "myapp/chat/list_chat_box.html", {'users': users,
+	"message_notice": MessageChat.objects.filter(Q(user1_search = User.objects.get(username = request.user.username), is_read_num_user2__gt=0) | Q(user2_search = User.objects.get(username = request.user.username), is_read_num_user1__gt=0))}) #'form_search': form, 'list_chat': list_chat
 
 
 def create_chat_or_redirect(request, slug_username):
@@ -286,4 +352,5 @@ def chat_box(request, slug_num):
 		if messages.message is not None:
 			message_list.append({messages.username: messages.message})
 
-	return render(request, "myapp/chat/chat_box.html", {'get_obj_slug':get_obj_slug, 'messages': get_obj_slug.user.all()})
+	return render(request, "myapp/chat/chat_box.html", {'get_obj_slug':get_obj_slug, 'messages': get_obj_slug.user.all(),
+		"message_notice": MessageChat.objects.filter(Q(user1_search = User.objects.get(username = request.user.username), is_read_num_user2__gt=0) | Q(user2_search = User.objects.get(username = request.user.username), is_read_num_user1__gt=0))})

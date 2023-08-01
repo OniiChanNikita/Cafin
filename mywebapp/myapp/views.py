@@ -84,6 +84,32 @@ def index(request):
 	 													'net_profit_by_month':net_profit_by_month, 'procent_net_profit_by_month': procent_net_profit_by_month,
 	 													'procent_since_last_month_sales': procent_since_last_month_sales, 'procent_since_last_month_net': procent_since_last_month_net,
 	 													"message_notice": MessageChat.objects.filter(Q(user1_search = User.objects.get(username = request.user.username), is_read_num_user2__gt=0) | Q(user2_search = User.objects.get(username = request.user.username), is_read_num_user1__gt=0))})
+@login_required
+def profile_users(request, slug_username):
+	user_obj = get_object_or_404(User, username=slug_username)
+	financesettlement = FinanceSettlement.objects.filter(username = user_obj)
+
+	return render(request, 'myapp/home/profile.html', {'user_obj': UserProfile.objects.get(username = user_obj), 'financesettlement': financesettlement})
+
+@login_required
+def search_users(request):
+	users_obj = []
+	if request.method == 'POST':
+		search_user = SearchUserForm(request.POST)
+		if search_user.is_valid():
+			print('hi')
+			username = request.POST['username_search_form']
+			list_username = []
+			for i in User.objects.all():
+				if username in i.username:
+					list_username.append(i.username)
+			print(list_username)
+
+			users_obj = User.objects.filter(username__in = list_username)
+
+	else:
+		search_user = SearchUserForm()
+	return render(request, 'myapp/home/find_user.html', {'users': users_obj, 'search_user': search_user})
 
 def register_user(request):
 	if not request.user.is_authenticated:

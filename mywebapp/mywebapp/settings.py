@@ -24,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-%sdxr8e=i8v#2!twjigbf%yg3e&yl0b7wm-g--zj(#xsq=p_mj'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['main--delightful-kleicha-1bc963.netlify.app', '127.0.0.1', '.netlify.app']
 

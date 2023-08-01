@@ -11,6 +11,9 @@ urlpatterns = [
     path('logout/', views.logout_user, name = 'logout'),
 
     path('profile/', views.profile, name='profile'),
+    path('profile/<slug:slug_username>', views.profile_users, name='profile_users'),
+    
+    path('search_users/', views.search_users, name='search_users'),
     path('create_finance_settlement/', views.create_finance_settlement, name='create_finance_settlement'),
     path('finance_tables/', views.finance_tables, name = 'finance_tables'),
     path('finance_tables/<slug:slug_financesettlement>/', views.open_finance_settlement, name = 'open_finance_settlement'),

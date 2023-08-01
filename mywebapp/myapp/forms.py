@@ -38,3 +38,5 @@ class FormCreateSettlement(forms.Form):
 	# operating_expens_form = forms.IntegerField(label = 'operating_expens')
 	# name_operating_expense_form = forms.CharField(max_length=500, label = 'name_operating_expense')
 
+class SearchUserForm(forms.Form):
+	username_search_form = forms.CharField(max_length=255, label = 'username_search')

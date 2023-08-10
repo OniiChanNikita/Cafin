@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-%sdxr8e=i8v#2!twjigbf%yg3e&yl0b7wm-g--zj(#xsq=p_mj
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['main--delightful-kleicha-1bc963.netlify.app', '127.0.0.1', '.netlify.app']
+ALLOWED_HOSTS = ['172.24.253.154', 'main--delightful-kleicha-1bc963.netlify.app', '127.0.0.1', '.netlify.app']
 
 
 # Application definition
@@ -81,7 +81,7 @@ CHANNEL_LAYERS = {
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
-
+CSRF_TRUSTED_ORIGINS = ['172.24.253.154']
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -124,7 +124,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 if DEBUG == True:
     STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 else:

@@ -35,14 +35,9 @@
         </li>
         <li class="nav-item dropdown">
           <a class="nav-link" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-            <i class="ni ni-bell-55"></i>
+            <b>+</b><i class="ni ni-single-02"></i>
           </a>
           <div class="dropdown-menu dropdown-menu-xl  dropdown-menu-right  py-0 overflow-hidden">
-            <!-- Dropdown header -->
-<!--             <div class="px-3 py-3">
-              <h6 class="text-sm text-muted m-0">You have <strong class="text-primary">13</strong> notifications.</h6>
-            </div> -->
-            <!-- List group -->
             <div class="list-group list-group-flush">
               {% for messages in message_notice %}
               <a href="{% url 'chat_box' slug_num=messages.slug_num %}" class="list-group-item list-group-item-action">
@@ -70,6 +65,56 @@
                 </div>
               </a>
               {% endfor %}
+            </div>
+            <!-- View all -->
+            <a  class="dropdown-item text-center text-primary font-weight-bold py-3"></a>
+          </div>
+        </li>
+        <li class="nav-item dropdown">
+          <a class="nav-link" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <i class="ni ni-bell-55"></i>
+          </a>
+          <div class="dropdown-menu dropdown-menu-xl  dropdown-menu-right  py-0 overflow-hidden">
+            <!-- Dropdown header -->
+<!--             <div class="px-3 py-3">
+              <h6 class="text-sm text-muted m-0">You have <strong class="text-primary">13</strong> notifications.</h6>
+            </div> -->
+            <!-- List group -->
+            <div class="list-group list-group-flush">
+              {% if message_notice != None %}
+              {% for messages in message_notice %}
+              <a href="{% url 'chat_box' slug_num=messages.slug_num %}" class="list-group-item list-group-item-action">
+                <div class="row align-items-center">
+                  <div class="col-auto">
+                    <!-- Avatar -->
+                    <!-- <img alt="Image placeholder" src="{% static 'myapp/panel_and_login/assets/img/theme/team-1.jpg' %}" class="avatar rounded-circle"> -->
+                  </div>
+                  <div class="col ml--2">
+                    <div class="d-flex justify-content-between align-items-center">
+                      <div>
+                        {% if messages.user1_search == request.user %}
+                        <h4 class="mb-0 text-sm">{{messages.user2_search}}</h4>
+                        {% else %}
+                        <h4 class="mb-0 text-sm">{{messages.user1_search}}</h4>
+
+                        {% endif %}
+                      </div>
+                      <div class="text-right text-muted">
+                        <small>{{messages.last_message.created_at}}</small>
+                      </div>
+                    </div>
+                    <p class="text-sm mb-0">{{messages.last_message.message}}</p>
+                  </div>
+                </div>
+              </a>
+              {% endfor %}
+              {% else %}
+              <div class="row align-items-center">
+                <div class="dropdown-item text-center py-3" style="color: black;">
+                  No messages
+                </div>
+              </div>
+              {% endif %}
             </div>
             <!-- View all -->
             <a href="{% url 'list_chat_box' %}" class="dropdown-item text-center text-primary font-weight-bold py-3">View all</a>

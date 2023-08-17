@@ -25,8 +25,12 @@ class UserProfile(models.Model):
 	def __str__(self):
 		return self.username.username
 
-
-
+class FriendsUser(models.Model):
+	user_request = models.ForeignKey(User, on_delete=models.CASCADE, related_name = 'user_request')
+	user_receiver = models.ForeignKey(User, on_delete=models.CASCADE, related_name = 'user_receiver')
+	access = models.CharField(max_length=50, null=True)
+	def __str__(self):
+		return self.user_request.username+' '+self.user_receiver.username
 
 class OperatingExpens(models.Model):
 	username = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True)
@@ -35,7 +39,6 @@ class OperatingExpens(models.Model):
 	created_at = models.DateTimeField(default=timezone.now)
 	def __str__(self):
 		return self.name_operating_expense
-
 
 
 class FinanceSettlement(models.Model):

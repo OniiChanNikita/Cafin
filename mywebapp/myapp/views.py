@@ -88,8 +88,29 @@ def index(request):
 def profile_users(request, slug_username):
 	user_obj = get_object_or_404(User, username=slug_username)
 	financesettlement = FinanceSettlement.objects.filter(username = user_obj)
-
-	return render(request, 'myapp/home/profile.html', {'user_obj': UserProfile.objects.get(username = user_obj), 'financesettlement': financesettlement})
+	friends = FriendsUser.objects.filter(Q(user_request=request.user, user_receiver=user_obj) | Q(user_request=user_obj, user_receiver=request.user)).first()
+	if friends == None:
+		label = 'create'
+	else:
+		label = 'delete'
+		if friends.access == 'unconfirm' and friends.user_receiver==request.user:
+			label = 'access'
+	if request.method == 'POST':
+		form_id = request.POST['form_id']
+		if form_id == 'form_friend':
+			if user_obj.username != request.user.username:
+				if label == 'create':
+					FriendsUser.objects.create(user_request = request.user, user_receiver=user_obj, access = 'unconfirm')
+				elif label == 'access':
+					print(friends, friends.access)
+					if friends.user_receiver == request.user:
+						friends.access = 'confirm'
+						friends.save()
+				elif label == 'delete':
+					FriendsUser.objects.filter(Q(user_request=request.user, user_receiver=user_obj) | Q(user_request=user_obj, user_receiver=request.user)).delete()
+	return render(request, 'myapp/home/profile.html', {'user_obj': UserProfile.objects.get(username = user_obj), 'financesettlement': financesettlement, 'label': label,
+														 'count_friends': FriendsUser.objects.filter(Q(user_request=request.user, user_receiver=user_obj) | Q(user_request=user_obj, user_receiver=request.user)).count(),
+														 'count_projects': financesettlement.count(), 'about_me': UserProfile.objects.get(username=user_obj).about_me})
 
 @login_required
 def search_users(request):
@@ -191,11 +212,11 @@ def profile(request):
 			user_profile.postal_code = postal_code
 
 			user_profile.save()
-			return render(request, 'myapp/home/profile.html', {'edit_form': edit_form, 'user_profile': user_profile,
+			return render(request, 'myapp/home/profile.html', {'about_me': UserProfile.objects.get(username=request.user).about_me, 'edit_form': edit_form, 'user_profile': user_profile,
 				"message_notice": MessageChat.objects.filter(Q(user1_search = User.objects.get(username = request.user.username), is_read_num_user2__gt=0) | Q(user2_search = User.objects.get(username = request.user.username), is_read_num_user1__gt=0))})
 	else:
 		edit_form=ProfileEditForm()
-	return render(request, 'myapp/home/profile.html', {'edit_form': edit_form, 'user_profile': user_profile,
+	return render(request, 'myapp/home/profile.html', {'about_me': UserProfile.objects.get(username=request.user).about_me, 'edit_form': edit_form, 'user_profile': user_profile,
 	"message_notice": MessageChat.objects.filter(Q(user1_search = User.objects.get(username = request.user.username), is_read_num_user2__gt=0) | Q(user2_search = User.objects.get(username = request.user.username), is_read_num_user1__gt=0))})
 
 @login_required

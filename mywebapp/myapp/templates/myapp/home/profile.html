@@ -40,7 +40,16 @@
         </div>
         <div class="card-header text-center border-0 pt-8 pt-md-4 pb-0 pb-md-4">
           <div class="d-flex justify-content-between">
-            <a href="#" class="btn btn-sm btn-info  mr-4 ">Connect</a>
+            {% if user_obj.username %}
+              {% if user_obj.username != request.user.username %}
+                <form id="form_friend" method="post">
+                  {%csrf_token%}
+                  <input type="hidden" name="form_id" value="form_friend">
+                  <button type="submit" class="btn btn-sm btn-info  mr-4 ">{% if label == 'delete' %}Unfriend{% elif label == 'access' %}Confirm friend{%elif label == 'create'%}Add friend{% endif %}</button>
+                </form>
+              {% endif %}
+            {% endif %}
+
             <a href="{% if user_obj.username == request.user.username %}{% url 'create_chat_or_redirect' slug_username=user_obj.username %}{% else %}{% url 'list_chat_box' %}{% endif %}" class="btn btn-sm btn-default float-right">Message</a>
           </div>
         </div>
@@ -49,51 +58,58 @@
             <div class="col">
               <div class="card-profile-stats d-flex justify-content-center">
                 <div>
-                  <span class="heading">22</span>
+                  <span class="heading">{{count_friends}}</span>
                   <span class="description">Friends</span>
                 </div>
                 <div>
-                  <span class="heading">10</span>
-                  <span class="description">Photos</span>
+                  <span class="heading">{{count_projects}}</span>
+                  <span class="description">Projects</span>
                 </div>
-                <div>
+                <!-- <div>
                   <span class="heading">89</span>
                   <span class="description">Comments</span>
-                </div>
+                </div> -->
               </div>
             </div>
           </div>
           <div class="text-center">
             <h5 class="h3">
-              {% if user_obj.username == request.user.username %}
-              {{ request.user.username }}
-
+              {% if user_obj.username %}
+                {% if user_obj.username != request.user.username %}
+                  {{user_obj.username}}
+                {% else %}
+                  {{request.user.username}}
+                {% endif %}
               {% else %}
-              {{user_obj.username}}
-
+                {{request.user.username}}
               {% endif %}
+
+
             </h5>
             <div class="h5 font-weight-300">
-              {% if user_obj.username == request.user.username %}
-              {{ request.user.email }}
-
+              {% if user_obj.email %}
+                {% if user_obj.username != request.user.username %}
+                  {{user_obj.email}}
+                {% else %}
+                  No email
+                {% endif %}
               {% else %}
-              {{user_obj.email}}
-
+                {{request.user.email}}
               {% endif %}
+
             </div>
             <div class="h5 mt-4">
               <i class="ni business_briefcase-24 mr-2"></i>Solution Manager - Creative Tim Officer
             </div>
             <div>
-              <i class="ni education_hat mr-2"></i>University of Computer Science
+              <i class="ni education_hat mr-2"></i>{{about_me}}
             </div>
           </div>
         </div>
       </div>
     </div>
     <div class="col-xl-8 order-xl-1">
-{% if user_obj.username == request.user.username %}
+{% if not user_obj %}
 
       <div class="card">
         <div class="card-header">
@@ -288,6 +304,7 @@
           </div>
         </div>
       {%endif%}
+
     </div>
   </div>
 

@@ -3,7 +3,7 @@
   <div class="container-fluid">
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
       <!-- Search form -->
-      <form class="navbar-search navbar-search-light form-inline mr-sm-3"  id="navbar-search-main">
+      <!-- <form class="navbar-search navbar-search-light form-inline mr-sm-3"  id="navbar-search-main">
         <div class="form-group mb-0">
           <div class="input-group input-group-alternative input-group-merge">
             <div class="input-group-prepend">
@@ -15,7 +15,7 @@
         <button type="button" class="close" data-action="search-close" data-target="#navbar-search-main" aria-label="Close">
           <span aria-hidden="true">×</span>
         </button>
-      </form>
+      </form> -->
       <!-- Navbar links -->
       <ul class="navbar-nav align-items-center  ml-md-auto ">
         <li class="nav-item d-xl-none">
@@ -39,8 +39,10 @@
           </a>
           <div class="dropdown-menu dropdown-menu-xl  dropdown-menu-right  py-0 overflow-hidden">
             <div class="list-group list-group-flush">
-              {% for messages in message_notice %}
-              <a href="{% url 'chat_box' slug_num=messages.slug_num %}" class="list-group-item list-group-item-action">
+              {% if friend_notice != None %}
+
+              {% for notice in friend_notice %}
+              <a  class="list-group-item list-group-item-action">
                 <div class="row align-items-center">
                   <div class="col-auto">
                     <!-- Avatar -->
@@ -49,25 +51,26 @@
                   <div class="col ml--2">
                     <div class="d-flex justify-content-between align-items-center">
                       <div>
-                        {% if messages.user1_search == request.user %}
-                        <h4 class="mb-0 text-sm">{{messages.user2_search}}</h4>
-                        {% else %}
-                        <h4 class="mb-0 text-sm">{{messages.user1_search}}</h4>
-
-                        {% endif %}
+                        <h4 class="mb-0 text-sm">{{notice.user_request}}</h4>
                       </div>
                       <div class="text-right text-muted">
-                        <small>{{messages.last_message.created_at}}</small>
+                        <small>Unconfirm</small>
                       </div>
                     </div>
-                    <p class="text-sm mb-0">{{messages.last_message.message}}</p>
+                    <!-- <p class="text-sm mb-0">{{messages.last_message.message}}</p> -->
                   </div>
                 </div>
               </a>
               {% endfor %}
+              {% else %}
+              <div class="row align-items-center">
+                <div class="dropdown-item text-center py-3" style="color: black;">
+                  No friend request
+                </div>
+              </div>
+              {% endif %}
             </div>
             <!-- View all -->
-            <a  class="dropdown-item text-center text-primary font-weight-bold py-3"></a>
           </div>
         </li>
         <li class="nav-item dropdown">

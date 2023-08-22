@@ -40,7 +40,6 @@ class OperatingExpens(models.Model):
 	def __str__(self):
 		return self.name_operating_expense
 
-
 class FinanceSettlement(models.Model):
 	username = models.ForeignKey(User, on_delete=models.CASCADE)
 	financial_identity_name = models.CharField(max_length=500)

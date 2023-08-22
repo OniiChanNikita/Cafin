@@ -78,9 +78,8 @@ def index(request):
 		else:
 			procent_since_last_month_sales = 0
 			procent_since_last_month_net = 0
-
 		users = MessageChat.objects.filter(Q(user1_search = User.objects.get(username = request.user.username), is_read_num_user2__gt=0) | Q(user2_search = User.objects.get(username = request.user.username), is_read_num_user1__gt=0))
-		return render(request, 'myapp/home/index.html', {'admin_status': admin_status, 'total_sales':total_sales, 'all_percent': round(all_percent, 2),
+		return render(request, 'myapp/home/index.html', {'friend_notice': FriendsUser.objects.filter(access='unconfirm', user_receiver = request.user),'admin_status': admin_status, 'total_sales':total_sales, 'all_percent': round(all_percent, 2),
 	 													'net_profit_by_month':net_profit_by_month, 'procent_net_profit_by_month': procent_net_profit_by_month,
 	 													'procent_since_last_month_sales': procent_since_last_month_sales, 'procent_since_last_month_net': procent_since_last_month_net,
 	 													"message_notice": MessageChat.objects.filter(Q(user1_search = User.objects.get(username = request.user.username), is_read_num_user2__gt=0) | Q(user2_search = User.objects.get(username = request.user.username), is_read_num_user1__gt=0))})
@@ -130,7 +129,7 @@ def search_users(request):
 
 	else:
 		search_user = SearchUserForm()
-	return render(request, 'myapp/home/find_user.html', {'users': users_obj, 'search_user': search_user})
+	return render(request, 'myapp/home/find_user.html', {'friend_notice': FriendsUser.objects.filter(access='unconfirm', user_receiver = request.user), 'users': users_obj, 'search_user': search_user})
 
 def register_user(request):
 	if not request.user.is_authenticated:
@@ -154,7 +153,7 @@ def register_user(request):
 			register_form = RegisterForm()
 		return render(request, 'myapp/accounts/register.html', {'register_form': register_form})
 	else:
-		return render(request, 'myapp/main.html')
+		return render(request, 'myapp/main.html', {})
 
 def login_user(request):
 	if not request.user.is_authenticated:
@@ -172,7 +171,7 @@ def login_user(request):
 			login_form = LoginForm()
 		return render(request, 'myapp/accounts/login.html', {'login_form': login_form})
 	else:	
-		return render(request, 'myapp/main.html')
+		return render(request, 'myapp/main.html', {})
 
 @login_required
 def logout_user(request):
@@ -212,11 +211,11 @@ def profile(request):
 			user_profile.postal_code = postal_code
 
 			user_profile.save()
-			return render(request, 'myapp/home/profile.html', {'about_me': UserProfile.objects.get(username=request.user).about_me, 'edit_form': edit_form, 'user_profile': user_profile,
+			return render(request, 'myapp/home/profile.html', {'friend_notice': FriendsUser.objects.filter(access='unconfirm', user_receiver = request.user),'about_me': UserProfile.objects.get(username=request.user).about_me, 'edit_form': edit_form, 'user_profile': user_profile,
 				"message_notice": MessageChat.objects.filter(Q(user1_search = User.objects.get(username = request.user.username), is_read_num_user2__gt=0) | Q(user2_search = User.objects.get(username = request.user.username), is_read_num_user1__gt=0))})
 	else:
 		edit_form=ProfileEditForm()
-	return render(request, 'myapp/home/profile.html', {'about_me': UserProfile.objects.get(username=request.user).about_me, 'edit_form': edit_form, 'user_profile': user_profile,
+	return render(request, 'myapp/home/profile.html', {'friend_notice': FriendsUser.objects.filter(access='unconfirm', user_receiver = request.user),'about_me': UserProfile.objects.get(username=request.user).about_me, 'edit_form': edit_form, 'user_profile': user_profile,
 	"message_notice": MessageChat.objects.filter(Q(user1_search = User.objects.get(username = request.user.username), is_read_num_user2__gt=0) | Q(user2_search = User.objects.get(username = request.user.username), is_read_num_user1__gt=0))})
 
 @login_required
@@ -263,13 +262,13 @@ def create_finance_settlement(request):
 	else:
 		form = FormCreateSettlement()
 		formset = InfiniteInputFormSet(queryset=OperatingExpens.objects.none())
-	return render(request, 'myapp/home/create_finance_settlement.html',  {'form': form, 'formset': formset,
+	return render(request, 'myapp/home/create_finance_settlement.html',  {'friend_notice': FriendsUser.objects.filter(access='unconfirm', user_receiver = request.user),'form': form, 'formset': formset,
 		"message_notice": MessageChat.objects.filter(Q(user1_search = User.objects.get(username = request.user.username), is_read_num_user2__gt=0) | Q(user2_search = User.objects.get(username = request.user.username), is_read_num_user1__gt=0))})
 
 @login_required
 def finance_tables(request):
 	financesettlement = FinanceSettlement.objects.filter(username = request.user)
-	return render(request, 'myapp/home/tables.html', {"financesettlement": financesettlement})
+	return render(request, 'myapp/home/tables.html', {'friend_notice': FriendsUser.objects.filter(access='unconfirm', user_receiver = request.user),"financesettlement": financesettlement})
 
 @login_required
 def open_finance_settlement(request, slug_financesettlement):
@@ -283,7 +282,7 @@ def open_finance_settlement(request, slug_financesettlement):
 		get_obj_avg_tn = -(get_obj_avg_net/get_obj_avg_total)*100
 	else:
 		get_obj_avg_tn = (1-(get_obj_avg_total/get_obj_avg_net))*100
-	return render(request, 'myapp/home/open_tables.html', {'get_obj': get_object_slug_financesettlement, 'get_expenses_obj': get_object_slug_financesettlement.input_values.all(),
+	return render(request, 'myapp/home/open_tables.html', {'friend_notice': FriendsUser.objects.filter(access='unconfirm', user_receiver = request.user),'get_obj': get_object_slug_financesettlement, 'get_expenses_obj': get_object_slug_financesettlement.input_values.all(),
 															 'get_obj_count': get_object_slug_financesettlement.input_values.all().count(), 'get_obj_avg': round(get_obj_avg, 2),
 															 'get_obj_avg_total_net': round(get_obj_avg_tn, 2),
 															 "message_notice": MessageChat.objects.filter(Q(user1_search = User.objects.get(username = request.user.username), is_read_num_user2__gt=0) | Q(user2_search = User.objects.get(username = request.user.username), is_read_num_user1__gt=0))})
@@ -355,14 +354,14 @@ def modify_table(request, slug_financesettlement):
 	else:
 		form = FormCreateSettlement()
 		formset = InfiniteInputFormSet(queryset=OperatingExpens.objects.none())
-	return render(request, 'myapp/home/create_finance_settlement.html',  {'form': form, 'formset': formset,
+	return render(request, 'myapp/home/create_finance_settlement.html',  {'friend_notice': FriendsUser.objects.filter(access='unconfirm', user_receiver = request.user),'form': form, 'formset': formset,
 		"message_notice": MessageChat.objects.filter(Q(user1_search = User.objects.get(username = request.user.username), is_read_num_user2__gt=0) | Q(user2_search = User.objects.get(username = request.user.username), is_read_num_user1__gt=0)), 'element_modify': element})
 
 @login_required
 def list_chat_box(request):
 	# users = UserProfile.objects.filter(username = request.user)
 	users = MessageChat.objects.filter(Q(user1_search = User.objects.get(username = request.user.username)) | Q(user2_search = User.objects.get(username = request.user.username)))
-	return render(request, "myapp/chat/list_chat_box.html", {'users': users,
+	return render(request, "myapp/chat/list_chat_box.html", {'friend_notice': FriendsUser.objects.filter(access='unconfirm', user_receiver = request.user),'users': users,
 	"message_notice": MessageChat.objects.filter(Q(user1_search = User.objects.get(username = request.user.username), is_read_num_user2__gt=0) | Q(user2_search = User.objects.get(username = request.user.username), is_read_num_user1__gt=0))}) #'form_search': form, 'list_chat': list_chat
 
 
@@ -399,5 +398,5 @@ def chat_box(request, slug_num):
 		if messages.message is not None:
 			message_list.append({messages.username: messages.message})
 
-	return render(request, "myapp/chat/chat_box.html", {'get_obj_slug':get_obj_slug, 'messages': get_obj_slug.user.all(),
+	return render(request, "myapp/chat/chat_box.html", {'friend_notice': FriendsUser.objects.filter(access='unconfirm', user_receiver = request.user),'get_obj_slug':get_obj_slug, 'messages': get_obj_slug.user.all(),
 		"message_notice": MessageChat.objects.filter(Q(user1_search = User.objects.get(username = request.user.username), is_read_num_user2__gt=0) | Q(user2_search = User.objects.get(username = request.user.username), is_read_num_user1__gt=0))})

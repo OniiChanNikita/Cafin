@@ -24,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-%sdxr8e=i8v#2!twjigbf%yg3e&yl0b7wm-g--zj(#xsq=p_mj'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['172.24.253.154', 'main--delightful-kleicha-1bc963.netlify.app', '127.0.0.1', '.netlify.app']
 
@@ -41,6 +41,11 @@ INSTALLED_APPS = [
     'myapp',
     'channels',
 ]
+
+SESSION_ENGINE = "django.contrib.sessions.backends.db"  # Бэкенд для хранения сессий
+SESSION_COOKIE_NAME = 'my_session'  # Имя куки сессии
+SESSION_COOKIE_AGE = 3600  # Время жизни сессии в секундах (1 час)
+SESSION_COOKIE_DOMAIN = None 
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

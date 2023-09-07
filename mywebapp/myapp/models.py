@@ -104,3 +104,4 @@ def update_last_message(sender, instance, action, reverse, model, pk_set, **kwar
 	instance.is_read_num_user1 = instance.user.filter(username=instance.user1_search, is_read=False).count()
 	instance.is_read_num_user2 = instance.user.filter(username=instance.user2_search, is_read=False).count()
 	instance.save()
+

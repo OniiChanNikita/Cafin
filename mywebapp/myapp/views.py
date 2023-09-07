@@ -1,14 +1,22 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth import logout, login, authenticate
+from django.http import HttpResponse
 from .models import *
 from django.db.models import *
+from django.contrib.sessions.models import Session
 from django.db.models.functions import ExtractMonth
 from .forms import *
 from django.forms.formsets import formset_factory
 from django.forms import modelformset_factory
 from django.utils import timezone
 import random
+from datetime import datetime, timedelta
+import uuid
+import ast
+
+def generate_unique_token():
+	return str(uuid.uuid4())
 
 def page_not_found_view(request, exception):
 	return render(request, 'myapp/home/page-404.html', status=404)
@@ -28,9 +36,13 @@ def generate_random_number():
     random_number = random.randrange(10**14, 10**15)
     return random_number
 
-
-
 def index(request):
+	token = request.COOKIES.get('remember_me_token')
+	token = token.strip("'").replace("'", '"')
+	token = ast.literal_eval(token)
+	if token:
+		if token.user_auth and (datetime.now() - token.datetime) <= timedelta(hours=1):
+			login(request, user)
 	if not request.user.is_authenticated:
 		return render(request, 'myapp/index.html')
 	else: 
@@ -160,12 +172,22 @@ def login_user(request):
 		if request.method == 'POST':
 				login_form = LoginForm(request.POST)
 				if login_form.is_valid():
+					print(request.POST)
 					username = request.POST['username_form']
 					password = request.POST['password_form']
 
 					user_auth = authenticate(request, username=username, password=password)
 					if user_auth is not None:
 						login(request, user_auth)
+						if request.POST['my_checkbox']=="on":
+							token = generate_unique_token()
+
+							response = HttpResponse("Куки установлены")
+							expiration_time = datetime.now() + timedelta(hours=1)
+							token_list = {'user_auth': user_auth, 'token':token, 'datetime': datetime.now()}
+
+							response.set_cookie('remember_me_token', token_list, expires=expiration_time)
+							return response
 						return redirect('index')
 		else:
 			login_form = LoginForm()

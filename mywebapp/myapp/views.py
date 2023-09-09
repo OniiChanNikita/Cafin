@@ -38,11 +38,19 @@ def generate_random_number():
 
 def index(request):
 	token = request.COOKIES.get('remember_me_token')
-	token = token.strip("'").replace("'", '"')
-	token = ast.literal_eval(token)
-	if token:
-		if token.user_auth and (datetime.now() - token.datetime) <= timedelta(hours=1):
-			login(request, user)
+	session_data = request.session.get('session_data', None)
+	print(session_data)
+	if session_data == token and session_data != None:
+		if (datetime.now() - token.datetime) <= timedelta(hours=1):
+			user_auth = authenticate(request, username=username, password=password)
+			if user_auth is not None:
+				login(request, user_auth)
+	# token = token.strip("'").replace("'", '"')
+	# token = ast.lite
+
+	# if token:
+	# 	if token.user_auth and (datetime.now() - token.datetime) <= timedelta(hours=1):
+	# 		login(request, user)
 	if not request.user.is_authenticated:
 		return render(request, 'myapp/index.html')
 	else: 
@@ -179,16 +187,15 @@ def login_user(request):
 					user_auth = authenticate(request, username=username, password=password)
 					if user_auth is not None:
 						login(request, user_auth)
-						if request.POST['my_checkbox']=="on":
-							token = generate_unique_token()
-
-							response = HttpResponse("Куки установлены")
+						response = redirect('index')
+						token = generate_unique_token()
+						request_session = request.session['session_data'] = {'token': token, 'username': username, 'password': password}
+						if request.POST.get('my_checkbox_form'):
+							expiration_time = datetime.now() + timedelta(hours=24)
+						else: 
 							expiration_time = datetime.now() + timedelta(hours=1)
-							token_list = {'user_auth': user_auth, 'token':token, 'datetime': datetime.now()}
-
-							response.set_cookie('remember_me_token', token_list, expires=expiration_time)
-							return response
-						return redirect('index')
+						response.set_cookie('remember_me_token', token, expires=expiration_time)
+						return response
 		else:
 			login_form = LoginForm()
 		return render(request, 'myapp/accounts/login.html', {'login_form': login_form})
@@ -198,7 +205,10 @@ def login_user(request):
 @login_required
 def logout_user(request):
 	logout(request)
-	return redirect('index')
+	response = redirect('index')
+	request.session.clear()
+	response.delete_cookie('remember_me_token')
+	return response
 
 @login_required
 def profile(request):

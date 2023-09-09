@@ -17,7 +17,7 @@ class RegisterForm(forms.Form):
 class LoginForm(forms.Form):
 	username_form = forms.CharField(max_length=255, label='username')
 	password_form = forms.CharField(widget=forms.PasswordInput, label='password')
-	my_checkbox = forms.BooleanField(
+	my_checkbox_form = forms.BooleanField(
         required=False,
         label='checkbox',
         widget=forms.CheckboxInput(attrs={'class': 'custom-control-input', 'id': 'customCheckLogin'}),  # Настройки виджета

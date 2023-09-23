@@ -24,6 +24,8 @@ urlpatterns = [
     path('chat/', views.list_chat_box, name='list_chat_box'),
     path('create_redirect_chat/<str:slug_username>/', views.create_chat_or_redirect, name='create_chat_or_redirect'),
     path('chat/<slug:slug_num>/', views.chat_box, name='chat_box'),
+
+    path('change_detail_profile_api/', views.change_detail_profile_api, name='change_detail_profile_api')
 ]
 
 if settings.DEBUG == False:

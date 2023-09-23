@@ -2,18 +2,28 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth import logout, login, authenticate
 from django.http import HttpResponse
-from .models import *
-from django.db.models import *
-from django.contrib.sessions.models import Session
 from django.db.models.functions import ExtractMonth
+from django.db.models import *
+
+from django.contrib.sessions.models import Session
+
+from rest_framework import status
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+
+from .serializer import *
+from .models import *
 from .forms import *
+
 from django.forms.formsets import formset_factory
 from django.forms import modelformset_factory
+
 from django.utils import timezone
 import random
 from datetime import datetime, timedelta
 import uuid
-import ast
+import json
 
 def generate_unique_token():
 	return str(uuid.uuid4())
@@ -432,3 +442,26 @@ def chat_box(request, slug_num):
 
 	return render(request, "myapp/chat/chat_box.html", {'friend_notice': FriendsUser.objects.filter(access='unconfirm', user_receiver = request.user),'get_obj_slug':get_obj_slug, 'messages': get_obj_slug.user.all(),
 		"message_notice": MessageChat.objects.filter(Q(user1_search = User.objects.get(username = request.user.username), is_read_num_user2__gt=0) | Q(user2_search = User.objects.get(username = request.user.username), is_read_num_user1__gt=0))})
+
+
+# try REST API
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def change_detail_profile_api(request):
+	data = request.data
+	serializer = UserSerializer(data=data)
+	if serializer.is_valid():
+		user = UserProfile.objects.get(username = User.objects.get(username = (json.loads(data['name'])).get('username_form')))
+		user.first_name = (json.loads(data['name'])).get('first_name_form')
+		user.last_name = (json.loads(data['name'])).get('last_name_form')
+		user.address = (json.loads(data['name'])).get('address_form')
+		user.city = (json.loads(data['name'])).get('city_form') 
+		user.country = (json.loads(data['name'])).get('country_form')
+		user.about_me = (json.loads(data['name'])).get('about_me_form')
+		user.save()
+		return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+# {"first_name_form": "a", "last_name_form": "a", "address_form": "a", "city_form": "a", "country_form": "a", "about_me_form": "a"}

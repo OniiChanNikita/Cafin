@@ -40,7 +40,15 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'myapp',
     'channels',
+    'rest_framework',
+    'rest_framework.authtoken',
 ]
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+    ],
+}
 
 SESSION_ENGINE = "django.contrib.sessions.backends.db"  # Бэкенд для хранения сессий
 SESSION_COOKIE_NAME = 'my_session'  # Имя куки сессии

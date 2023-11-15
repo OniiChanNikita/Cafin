@@ -1,0 +1,6 @@
+venv/
+staticfiles/
+mywebapp/bin/
+mywebapp/.buildozer/
+mywebapp/buildozer.spec/
+mywebapp/main.py/

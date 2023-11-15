@@ -3,7 +3,7 @@
 {% block title %} Profile {% endblock title %}
 
 {% block content %}
-
+{% if user_obj.username == request.user.username %}
 <div class="header pb-6 d-flex align-items-center" 
      style="min-height: 500px; background-image: url(/static/assets/img/theme/profile-cover.jpg); background-size: cover; background-position: center top;">
   <!-- Mask -->
@@ -21,8 +21,10 @@
     </div>
   </div>
 </div>
+{% endif %}
+
 <!-- Page content -->
-<div class="container-fluid mt--6">
+<div class="container-fluid align-items-center" style="margin-top: 20px">
   <div class="row">
     <div class="col-xl-4 order-xl-2">
       <div class="card card-profile">
@@ -38,8 +40,17 @@
         </div>
         <div class="card-header text-center border-0 pt-8 pt-md-4 pb-0 pb-md-4">
           <div class="d-flex justify-content-between">
-            <a href="#" class="btn btn-sm btn-info  mr-4 ">Connect</a>
-            <a href="#" class="btn btn-sm btn-default float-right">Message</a>
+            {% if user_obj.username %}
+              {% if user_obj.username != request.user.username %}
+                <form id="form_friend" method="post">
+                  {%csrf_token%}
+                  <input type="hidden" name="form_id" value="form_friend">
+                  <button type="submit" class="btn btn-sm btn-info  mr-4 ">{% if label == 'delete' %}Unfriend{% elif label == 'access' %}Confirm friend{%elif label == 'create'%}Add friend{% endif %}</button>
+                </form>
+              {% endif %}
+            {% endif %}
+
+            <a href="{% if user_obj.username == request.user.username %}{% url 'create_chat_or_redirect' slug_username=user_obj.username %}{% else %}{% url 'list_chat_box' %}{% endif %}" class="btn btn-sm btn-default float-right">Message</a>
           </div>
         </div>
         <div class="card-body pt-0">
@@ -47,38 +58,59 @@
             <div class="col">
               <div class="card-profile-stats d-flex justify-content-center">
                 <div>
-                  <span class="heading">22</span>
+                  <span class="heading">{{count_friends}}</span>
                   <span class="description">Friends</span>
                 </div>
                 <div>
-                  <span class="heading">10</span>
-                  <span class="description">Photos</span>
+                  <span class="heading">{{count_projects}}</span>
+                  <span class="description">Projects</span>
                 </div>
-                <div>
+                <!-- <div>
                   <span class="heading">89</span>
                   <span class="description">Comments</span>
-                </div>
+                </div> -->
               </div>
             </div>
           </div>
           <div class="text-center">
             <h5 class="h3">
-              {{ request.user.username }}
+              {% if user_obj.username %}
+                {% if user_obj.username != request.user.username %}
+                  {{user_obj.username}}
+                {% else %}
+                  {{request.user.username}}
+                {% endif %}
+              {% else %}
+                {{request.user.username}}
+              {% endif %}
+
+
             </h5>
             <div class="h5 font-weight-300">
-              {{ request.user.email }}
+              {% if user_obj.email %}
+                {% if user_obj.username != request.user.username %}
+                  {{user_obj.email}}
+                {% else %}
+                  No email
+                {% endif %}
+              {% else %}
+                {{request.user.email}}
+              {% endif %}
+
             </div>
             <div class="h5 mt-4">
               <i class="ni business_briefcase-24 mr-2"></i>Solution Manager - Creative Tim Officer
             </div>
             <div>
-              <i class="ni education_hat mr-2"></i>University of Computer Science
+              <i class="ni education_hat mr-2"></i>{{about_me}}
             </div>
           </div>
         </div>
       </div>
     </div>
     <div class="col-xl-8 order-xl-1">
+{% if not user_obj %}
+
       <div class="card">
         <div class="card-header">
           <div class="row align-items-center">
@@ -126,7 +158,7 @@
                 <div class="col-lg-6">
                   <div class="form-group">
                     <label class="form-control-label" for="input-first-name">First name</label>
-                    <input type="text" id="id_{{i.label}}_form" name='{{i.label}}_form' class="form-control" placeholder="First name" value="{{user_profile.first_name}}">
+                    <input type="text" id="id_{{i.label}}_form" name='{{i.label}}_form' class="form-control" placeholder="First name" value="{% if user_profile.first_name %}{{user_profile.first_name}}{% endif %}">
                   </div>
                 </div>
                 {% endif %}
@@ -138,7 +170,7 @@
                 <div class="col-lg-6">
                   <div class="form-group">
                     <label class="form-control-label" for="input-last-name">Last name</label>
-                    <input type="text" id="id_{{i.label}}_form" name='{{i.label}}_form' class="form-control" placeholder="Last name" value="{{user_profile.last_name}}">
+                    <input type="text" id="id_{{i.label}}_form" name='{{i.label}}_form' class="form-control" placeholder="Last name" value="{% if user_profile.last_name %}{{user_profile.last_name}} {% endif %}">
                   </div>
                 </div>
                 {% endif %}
@@ -156,7 +188,7 @@
                 <div class="col-md-12">
                   <div class="form-group">
                     <label class="form-control-label" for="input-address">Address</label>
-                    <input id="id_{{i.label}}_form" name='{{i.label}}_form' class="form-control" placeholder="Home Address" value="{{user_profile.address}}" type="text">
+                    <input id="id_{{i.label}}_form" name='{{i.label}}_form' class="form-control" placeholder="Home Address" value="{% if user_profile.address %}{{user_profile.address}}{% endif %}" type="text">
                   </div>
                 </div>
                 {% endif %}
@@ -170,7 +202,7 @@
                 <div class="col-lg-4">
                   <div class="form-group">
                     <label class="form-control-label" for="input-city">City</label>
-                    <input type="text" id="id_{{i.label}}_form" name='{{i.label}}_form' class="form-control" placeholder="City" value="{{user_profile.city}}">
+                    <input type="text" id="id_{{i.label}}_form" name='{{i.label}}_form' class="form-control" placeholder="City" value="{% if user_profile.city %}{{user_profile.city}}{% endif %}">
                   </div>
                 </div>
                 {% endif %}
@@ -182,7 +214,7 @@
                 <div class="col-lg-4">
                   <div class="form-group">
                     <label class="form-control-label" for="input-country">Country</label>
-                    <input type="text" id="id_{{i.label}}_form" name='{{i.label}}_form' class="form-control" placeholder="Country" value="{{user_profile.country}}">
+                    <input type="text" id="id_{{i.label}}_form" name='{{i.label}}_form' class="form-control" placeholder="Country" value="{% if user_profile.country %}{{user_profile.country}}{% endif %}">
                   </div>
                 </div>
                 {% endif %}
@@ -194,7 +226,7 @@
                 <div class="col-lg-4">
                   <div class="form-group">
                     <label class="form-control-label" for="input-country">Postal code</label>
-                    <input type="number" id="id_{{i.label}}_form" name='{{i.label}}_form' class="form-control" placeholder="Postal code" value='{{user_profile.postal_code}}'>
+                    <input type="number" id="id_{{i.label}}_form" name='{{i.label}}_form' class="form-control" placeholder="Postal code" value='{% if user_profile.postal_code %}{{user_profile.postal_code}}{% endif %}'>
                   </div>
                 </div>
                 {% endif %}
@@ -211,7 +243,7 @@
             <div class="pl-lg-4">
               <div class="form-group">
                 <label class="form-control-label">About Me</label>
-                <textarea rows="4" id="id_{{i.label}}_form" name='{{i.label}}_form' class="form-control" placeholder="A few words about you ...">{{user_profile.about_me}}</textarea>
+                <textarea rows="4" id="id_{{i.label}}_form" name='{{i.label}}_form' class="form-control" placeholder="A few words about you ...">{% if user_profile.about_me %}{{user_profile.about_me}}{% endif %}</textarea>
               </div>
             </div>
             {% endif %}
@@ -221,6 +253,58 @@
           </form>
         </div>
       </div>
+      {%else%}
+      <div class="card">
+          <!-- Card header -->
+          <div class="card-header border-0">
+            <h3 class="mb-0">Light table</h3>
+          </div>
+          <!-- Light table -->
+          <div class="table-responsive">
+            <table class="table align-items-center table-flush">
+              <thead class="thead-light">
+                <tr>
+                  <th scope="col" class="sort" data-sort="name">Project</th>
+                  <th scope="col" class="sort" data-sort="net_profit">Net income</th>
+                  <th scope="col" class="sort" data-sort="total_attachment">Total attachment</th>
+                  <th scope="col" class="sort" data-sort="status">Status</th>
+                  <th scope="col"></th>
+                </tr>
+              </thead>
+              <tbody class="list">
+                {% for i in financesettlement %}
+                <tr data-id = '{{ i.id }}' class = 'table_element'>
+                  <th scope="row">
+                    <div class="media align-items-center">
+                      <a href="#" class="avatar rounded-circle mr-3">
+                        <img alt="Image placeholder" src="{% static 'myapp/panel_and_login/assets/img/theme/bootstrap.jpg' %}">
+                      </a>
+                      <div class="media-body">
+                        <span class="name mb-0 text-sm">{{i.financial_identity_name}}</span>
+                      </div>
+                    </div>
+                  </th>
+                  <td class="budget">
+                    ${{i.net_profit}} USD
+                  </td>
+                  <td class="budget">
+                    ${{i.total_attachment}} USD
+                  </td>
+                  <td>
+                    <span class="badge badge-dot mr-4">
+                      <i class="bg-warning"></i>
+                      <span class="status">{% if i.is_completed == 'True' %}Complited{% else %}Not complited{% endif %}</span>
+                    </span>
+                  </td>
+                  
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      {%endif%}
+
     </div>
   </div>
 

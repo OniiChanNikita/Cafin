@@ -6,3 +6,5 @@ from .models import *
 admin.site.register(UserProfile)
 admin.site.register(FinanceSettlement)
 admin.site.register(OperatingExpens)
+admin.site.register(MessageChat)
+admin.site.register(MessagerModel)

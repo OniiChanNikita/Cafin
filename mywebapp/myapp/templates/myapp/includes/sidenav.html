@@ -40,11 +40,18 @@
               <span class="nav-link-text">Profile</span>
             </a>
           </li>
+          
           {% if not admin_status%}
           <li class="nav-item">
             <a class="nav-link {% if 'tables' in segment %} active {% endif %}" href="{% url 'finance_tables' %}">
               <i class="ni ni-bullet-list-67 text-default"></i>
               <span class="nav-link-text">Tables</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% if 'profile' in segment %} active {% endif %}" href="{% url 'search_users' %}">
+              <i class="ni ni-single-02 text-blue"></i>
+              <span class="nav-link-text">Find Profile</span>
             </a>
           </li>
           <li class="nav-item">

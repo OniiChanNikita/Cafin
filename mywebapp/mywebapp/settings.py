@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-%sdxr8e=i8v#2!twjigbf%yg3e&yl0b7wm-g--zj(#xsq=p_mj
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['main--delightful-kleicha-1bc963.netlify.app', '127.0.0.1', '.netlify.app']
+ALLOWED_HOSTS = ['172.24.253.154', 'main--delightful-kleicha-1bc963.netlify.app', '127.0.0.1', '.netlify.app']
 
 
 # Application definition
@@ -39,7 +39,21 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'myapp',
+    'channels',
+    'rest_framework',
+    'rest_framework.authtoken',
 ]
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+    ],
+}
+
+SESSION_ENGINE = "django.contrib.sessions.backends.db"  # Бэкенд для хранения сессий
+SESSION_COOKIE_NAME = 'my_session'  # Имя куки сессии
+SESSION_COOKIE_AGE = 3600  # Время жизни сессии в секундах (1 час)
+SESSION_COOKIE_DOMAIN = None 
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -49,6 +63,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+     'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
 
 ROOT_URLCONF = 'mywebapp.urls'
@@ -70,11 +85,17 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'mywebapp.wsgi.application'
+ASGI_APPLICATION = "mywebapp.routing.application" #routing.py will be created later
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': "channels.layers.InMemoryChannelLayer"
+        }
+    }
 
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
-
+CSRF_TRUSTED_ORIGINS = ['172.24.253.154']
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -118,9 +139,13 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATIC_URL = '/static/'
-STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+if DEBUG == True:
+    STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+else:
+    STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+

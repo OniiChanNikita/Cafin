@@ -1,0 +1,178 @@
+{% extends 'myapp/layouts/base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+
+    #input_button_chat{
+        padding: 0 !important;
+        margin: 0 !important;
+        background-color: #f7fafc;
+        position: fixed;
+        width: calc(100% - 280px);
+        transition: transform 0.2s ease-in-out;
+        bottom: 0;
+        display: flex;
+        justify-content: center;
+    }
+    @media (max-width: 1199.98px){
+        #input_button_chat{
+            width: calc(100% - 30px);;
+        }
+    }
+    ::-webkit-scrollbar {
+        width: 8px; /* Ширина полосы прокрутки */
+    }
+
+    ::scrollbar-track {
+      background-color: transparent; /* Прозрачный фон трека */
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background-color: rgba(0, 0, 0, 0.5); /* Цвет ползунка с прозрачностью */
+      border-radius: 4px; /* Скругление углов ползунка */
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background-color: rgba(0, 0, 0, 0.7); /* Цвет ползунка при наведении с прозрачностью */
+    }
+</style>
+<form method = 'post' class="col-md-6 col-lg-7 col-xl-8 chat_box_message" style = 'max-width: 100%; position: relative; '>
+    {% csrf_token %}
+    <div id = 'block_add_message' class="pt-3 pe-3" data-mdb-perfect-scrollbar="true"
+      style="position: relative; margin-bottom: calc(2.25em + 1.25rem + 5px);">
+      {% for message in messages %}
+          {% if message.message != None and message.message != '' %}
+          {% if message.username != request.user %}
+          <div class="d-flex flex-row justify-content-start">
+            <!-- <img src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava6-bg.webp"
+              alt="avatar 1" style="width: 45px; height: 100%;"> -->
+            <div>
+              <p class="small ms-3 mb-3 rounded-3 text-muted"  style="margin: 0 !important">{{message.username}}</p>
+              <p class="small p-2 ms-3 mb-1 rounded-3" style="background-color: #f5f6f7;">{{message.message}}</p>
+              <p class="small ms-3 mb-3 rounded-3 text-muted float-end">{{message.created_at}}</p>
+            </div>
+          </div>
+          {% elif message.username != request.user %}
+          {% else %}
+          <div class="d-flex flex-row justify-content-end">
+            <div>
+              <p class="small ms-3 mb-3 rounded-3 text-muted float-end" style="margin: 0 !important">{{message.username}}</p>
+              <p class="small p-2 me-3 mb-1 text-white rounded-3 bg-primary">{{message.message}}</p>
+              <p class="small me-3 mb-3 rounded-3 text-muted">{{message.created_at}}</p> <!-- 12:00 PM | Aug 13 -->
+            </div>
+            <!-- <img src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava1-bg.webp"
+              alt="avatar 1" style="width: 45px; height: 100%;"> -->
+          </div>
+          {% endif %}
+      {% endif %}
+      {% endfor %}
+      
+    </div>
+    
+
+<div id = 'input_button_chat' class="text-muted d-flex justify-content-start align-items-center pe-3 pt-3 mt-2" >
+    <div class="text-muted d-flex justify-content-start align-items-center pe-3 pt-3 mt-2"  style=" width: 100% !important; padding: 0 !important; margin: 0;">
+      <img src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava6-bg.webp"
+        alt="avatar 3" style="width: 40px; height: 100%;">
+      <input id = 'input' type="text" class="form-control form-control-lg" id="exampleFormControlInput2"
+        placeholder="Type message">
+      <a class="ms-1 text-muted" href="#!"><i class="fas fa-paperclip"></i></a>
+      <a class="ms-3 text-muted" href="#!"><i class="fas fa-smile"></i></a>
+      <a id = 'submit' type="button" class="ms-3" ><i class="fas fa-paper-plane"></i></a>
+    </div>
+</div>
+</form>
+
+{% block script_block %}
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
+{{ request.user.username|json_script:"user_username" }}
+{{ chat_box_name|json_script:"room-name"}}
+<script>
+    const container = document.getElementById("block_add_message");
+
+    window.scrollTo(0, document.body.scrollHeight);
+    function scrollToBottom() {
+        const chat_messages = document.querySelector(".chat_box_message");
+        chat_messages.scrollTop = chat_messages.scrollHeight;
+    }
+    scrollToBottom()
+    const chatSocket = new WebSocket(
+      'ws://' +
+      window.location.host +
+      '/chat/' +
+        '{{get_obj_slug.slug_num}}' +
+      '/'
+    );
+    const user_username = JSON.parse(document.getElementById('user_username').textContent);
+    document.querySelector('#submit').onclick = function (e) {
+      const messageInputDom = document.querySelector('#input');
+      const message = messageInputDom.value;
+      chatSocket.send(JSON.stringify({
+          'message': message,
+          'username': user_username,
+      }));
+      messageInputDom.value = '';
+    };
+    const input = document.querySelector('#input')
+     $('#input').on('keypress', function(event){
+        if(event.keyCode === 13){
+            event.preventDefault();
+            const messageInputDom = document.querySelector('#input');
+            const message = messageInputDom.value;
+            chatSocket.send(JSON.stringify({
+              'message': message,
+              'username': user_username,
+            }));
+            messageInputDom.value = '';
+            }
+    });
+    chatSocket.onmessage = function (e) {
+        console.log('get')
+
+        const data = JSON.parse(e.data)
+        let currentDate = new Date();
+        const options = { 
+          year: 'numeric', 
+          month: 'long', 
+          day: 'numeric', 
+          hour: 'numeric', 
+          minute: 'numeric', 
+          hour12: true 
+        };
+        const formattedDate = currentDate.toLocaleString('en-US', options);
+        let main_div = document.createElement("div");
+        let div_child = document.createElement('div')
+        let p_name = document.createElement('p')
+        let p_message = document.createElement('p')
+        let p_date = document.createElement('p')
+        if (data.username == '{{request.user}}'){
+          main_div.classList.add("d-flex", "flex-row", "justify-content-end");
+          p_name.classList.add("small", "ms-3", "mb-3", "rounded-3", "text-muted", "float-end")
+          p_name.style.margin = "margin: 0 !important;"
+          p_message.classList.add("small", "p-2", "me-3", "mb-1", "text-white", "rounded-3", "bg-primary")
+          p_date.classList.add("small", "me-3", "mb-3", "rounded-3", "text-muted")
+        }else{
+          main_div.classList.add("d-flex", "flex-row", "justify-content-start");
+          p_name.classList.add("small", "ms-3", "mb-3", "rounded-3", "text-muted")
+          p_name.style.margin = "margin: 0 !important;"
+          p_message.classList.add("small", "p-2", "ms-3", "mb-1", "rounded-3")
+          p_date.classList.add("small", "ms-3", "mb-3", "rounded-3", "text-muted", 'float-end')
+        }
+        p_name.textContent =(data.username)
+        p_message.textContent =(data.message)
+        p_date.textContent =(formattedDate)
+        container.appendChild(main_div)
+        main_div.appendChild(div_child)
+        div_child.appendChild(p_name)
+        div_child.appendChild(p_message)
+        div_child.appendChild(p_date)
+        console.log('{{request.user}}')
+        window.scrollTo(0, document.body.scrollHeight);
+   }
+
+</script>
+
+
+{% endblock script_block %}
+{% endblock content %}

@@ -40,7 +40,7 @@
                 <div class="col-lg-6">
                   <div class="form-group">
                     <label class="form-control-label" for="input-username">Financial identity name</label>
-                    <input type="text" required maxlength="500"  id="id_financial_identity_name_form" name="financial_identity_name_form" class="form-control" placeholder="Financial name" value="">
+                    <input type="text" required maxlength="500" id="id_financial_identity_name_form" name="financial_identity_name_form" class="form-control" placeholder="Financial name" value = '{% if element_modify %}{{element_modify.financial_identity_name}}{% endif %}'>
                   </div>
                 </div>
                 {% endif %}
@@ -52,7 +52,7 @@
                 <div class="col-lg-6">
                   <div class="form-group">
                     <label class="form-control-label" for="input-email">Net profit</label>
-                    <input type="number" required  id="id_net_profit_form" name='net_profit_form' class="form-control" placeholder="Net profit">
+                    <input type="number" value = '{% if element_modify %}{{element_modify.net_profit}}{% endif %}' required  id="id_net_profit_form" name='net_profit_form' class="form-control" placeholder="Net profit">
                   </div>
                 </div>
                 {% endif %}
@@ -65,7 +65,7 @@
                 <div class="col-lg-6">
                   <div class="form-group">
                     <label class="form-control-label" for="input-first-name">Total attachment</label>
-                    <input type="number" required  id="id_total_attachment_form" name='total_attachment_form' class="form-control" placeholder="Total attachment">
+                    <input type="number" value = '{% if element_modify %}{{element_modify.total_attachment}}{% endif %}' required  id="id_total_attachment_form" name='total_attachment_form' class="form-control" placeholder="Total attachment">
                   </div>
                 </div>
                 {% endif %}

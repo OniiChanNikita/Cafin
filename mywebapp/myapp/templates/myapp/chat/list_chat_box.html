@@ -1,0 +1,61 @@
+{% extends 'myapp/layouts/base.html' %}
+{% load static %}
+{% block title %} Profile {% endblock title %}
+
+{% block content %}
+<div class="p-3" style="width: 100%">
+
+  <div class="input-group rounded mb-3">
+    <input type="search" class="form-control rounded" style="background-color: transparent;" placeholder="Search" aria-label="Search"
+      aria-describedby="search-addon" />
+    <span class="input-group-text border-0" style="background-color: transparent;" id="search-addon">
+      <i class="fas fa-search"></i>
+    </span>
+  </div>
+
+<div data-mdb-perfect-scrollbar="true" style="position: relative;">
+
+    <ul class="list-unstyled mb-0">
+    {% for i in users %}
+    <li class="p-2 border-bottom">
+        {% if i.user1_search == request.user %}
+        <a href="{% url 'create_chat_or_redirect' slug_username=i.user2_search.username %}" class="d-flex justify-content-between">
+        {% else %}
+        <a href="{% url 'create_chat_or_redirect' slug_username=i.user1_search.username %}" class="d-flex justify-content-between">
+        {% endif %}
+          <div class="d-flex flex-row">
+            <div>
+            </div>
+            <div class="pt-1">
+            {% if i.user1_search == request.user %}
+              <p class="fw-bold mb-0">{{i.user2_search.username}}</p>
+            {% else %}
+              <p class="fw-bold mb-0">{{i.user1_search.username}}</p>
+            {% endif %}
+              <p class="small text-muted">{{i.last_message.message}}</p>
+            </div>
+          </div>
+          <div class="pt-1">
+            <p class="small text-muted mb-1" >Just now</p>
+            {% if i.user1_search == request.user %}
+            <span class="badge bg-danger rounded-pill float-end" style='color: white !important;'>{{i.is_read_num_user2}}</span>
+            {% else %}
+            <span class="badge bg-danger rounded-pill float-end" style='color: white !important;'>{{i.is_read_num_user1}}</span>
+            {% endif %}
+
+          </div>
+        </a>
+    </li>
+    {% endfor %}
+    </ul>
+</div>
+
+</div>
+
+{% endblock content %}
+
+
+<!-- Specific JS goes HERE --> 
+{% block javascripts %}{% endblock javascripts %}
+
+

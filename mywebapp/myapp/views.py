@@ -1,22 +1,66 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth import logout, login, authenticate
-from .models import *
-from django.db.models import *
+from django.http import HttpResponse
 from django.db.models.functions import ExtractMonth
-from .forms import *
-from django.forms.formsets import formset_factory
-import random
-from django.forms import modelformset_factory
-from django.utils import timezone
+from django.db.models import *
 
+from django.contrib.sessions.models import Session
+
+from rest_framework import status
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+
+from .serializer import *
+from .models import *
+from .forms import *
+
+from django.forms.formsets import formset_factory
+from django.forms import modelformset_factory
+
+from django.utils import timezone
+import random
+from datetime import datetime, timedelta
+import uuid
+import json
+
+def generate_unique_token():
+	return str(uuid.uuid4())
+
+def page_not_found_view(request, exception):
+	return render(request, 'myapp/home/page-404.html', status=404)
+
+def permission_denied_view(request, exception):
+	return render(request, 'myapp/home/page-403.html', status=403)
+
+def server_error_view(request):
+	return render(request, 'myapp/home/page-500.html', status=500)
 
 def specific_string(length): 
     sample_string = 'pqrstuvwxy' 
     result = ''.join((random.choice(sample_string)) for x in range(length)) 
     return result
 
+def generate_random_number():
+    random_number = random.randrange(10**14, 10**15)
+    return random_number
+
 def index(request):
+	token = request.COOKIES.get('remember_me_token')
+	session_data = request.session.get('session_data', None)
+	print(session_data)
+	if session_data == token and session_data != None:
+		if (datetime.now() - token.datetime) <= timedelta(hours=1):
+			user_auth = authenticate(request, username=username, password=password)
+			if user_auth is not None:
+				login(request, user_auth)
+	# token = token.strip("'").replace("'", '"')
+	# token = ast.lite
+
+	# if token:
+	# 	if token.user_auth and (datetime.now() - token.datetime) <= timedelta(hours=1):
+	# 		login(request, user)
 	if not request.user.is_authenticated:
 		return render(request, 'myapp/index.html')
 	else: 
@@ -64,9 +108,58 @@ def index(request):
 		else:
 			procent_since_last_month_sales = 0
 			procent_since_last_month_net = 0
-		return render(request, 'myapp/home/index.html', {'admin_status': admin_status, 'total_sales':total_sales, 'all_percent': round(all_percent, 2),
+		users = MessageChat.objects.filter(Q(user1_search = User.objects.get(username = request.user.username), is_read_num_user2__gt=0) | Q(user2_search = User.objects.get(username = request.user.username), is_read_num_user1__gt=0))
+		return render(request, 'myapp/home/index.html', {'friend_notice': FriendsUser.objects.filter(access='unconfirm', user_receiver = request.user),'admin_status': admin_status, 'total_sales':total_sales, 'all_percent': round(all_percent, 2),
 	 													'net_profit_by_month':net_profit_by_month, 'procent_net_profit_by_month': procent_net_profit_by_month,
-	 													'procent_since_last_month_sales': procent_since_last_month_sales, 'procent_since_last_month_net': procent_since_last_month_net})
+	 													'procent_since_last_month_sales': procent_since_last_month_sales, 'procent_since_last_month_net': procent_since_last_month_net,
+	 													"message_notice": MessageChat.objects.filter(Q(user1_search = User.objects.get(username = request.user.username), is_read_num_user2__gt=0) | Q(user2_search = User.objects.get(username = request.user.username), is_read_num_user1__gt=0))})
+@login_required
+def profile_users(request, slug_username):
+	user_obj = get_object_or_404(User, username=slug_username)
+	financesettlement = FinanceSettlement.objects.filter(username = user_obj)
+	friends = FriendsUser.objects.filter(Q(user_request=request.user, user_receiver=user_obj) | Q(user_request=user_obj, user_receiver=request.user)).first()
+	if friends == None:
+		label = 'create'
+	else:
+		label = 'delete'
+		if friends.access == 'unconfirm' and friends.user_receiver==request.user:
+			label = 'access'
+	if request.method == 'POST':
+		form_id = request.POST['form_id']
+		if form_id == 'form_friend':
+			if user_obj.username != request.user.username:
+				if label == 'create':
+					FriendsUser.objects.create(user_request = request.user, user_receiver=user_obj, access = 'unconfirm')
+				elif label == 'access':
+					print(friends, friends.access)
+					if friends.user_receiver == request.user:
+						friends.access = 'confirm'
+						friends.save()
+				elif label == 'delete':
+					FriendsUser.objects.filter(Q(user_request=request.user, user_receiver=user_obj) | Q(user_request=user_obj, user_receiver=request.user)).delete()
+	return render(request, 'myapp/home/profile.html', {'user_obj': UserProfile.objects.get(username = user_obj), 'financesettlement': financesettlement, 'label': label,
+														 'count_friends': FriendsUser.objects.filter(Q(user_request=request.user, user_receiver=user_obj) | Q(user_request=user_obj, user_receiver=request.user)).count(),
+														 'count_projects': financesettlement.count(), 'about_me': UserProfile.objects.get(username=user_obj).about_me})
+
+@login_required
+def search_users(request):
+	users_obj = []
+	if request.method == 'POST':
+		search_user = SearchUserForm(request.POST)
+		if search_user.is_valid():
+			print('hi')
+			username = request.POST['username_search_form']
+			list_username = []
+			for i in User.objects.all():
+				if username in i.username:
+					list_username.append(i.username)
+			print(list_username)
+
+			users_obj = User.objects.filter(username__in = list_username)
+
+	else:
+		search_user = SearchUserForm()
+	return render(request, 'myapp/home/find_user.html', {'friend_notice': FriendsUser.objects.filter(access='unconfirm', user_receiver = request.user), 'users': users_obj, 'search_user': search_user})
 
 def register_user(request):
 	if not request.user.is_authenticated:
@@ -90,30 +183,42 @@ def register_user(request):
 			register_form = RegisterForm()
 		return render(request, 'myapp/accounts/register.html', {'register_form': register_form})
 	else:
-		return render(request, 'myapp/main.html')
+		return render(request, 'myapp/main.html', {})
 
 def login_user(request):
 	if not request.user.is_authenticated:
 		if request.method == 'POST':
 				login_form = LoginForm(request.POST)
 				if login_form.is_valid():
+					print(request.POST)
 					username = request.POST['username_form']
 					password = request.POST['password_form']
 
 					user_auth = authenticate(request, username=username, password=password)
 					if user_auth is not None:
 						login(request, user_auth)
-						return redirect('index')
+						response = redirect('index')
+						token = generate_unique_token()
+						request_session = request.session['session_data'] = {'token': token, 'username': username, 'password': password}
+						if request.POST.get('my_checkbox_form'):
+							expiration_time = datetime.now() + timedelta(hours=24)
+						else: 
+							expiration_time = datetime.now() + timedelta(hours=1)
+						response.set_cookie('remember_me_token', token, expires=expiration_time)
+						return response
 		else:
 			login_form = LoginForm()
 		return render(request, 'myapp/accounts/login.html', {'login_form': login_form})
 	else:	
-		return render(request, 'myapp/main.html')
+		return render(request, 'myapp/main.html', {})
 
 @login_required
 def logout_user(request):
 	logout(request)
-	return redirect('index')
+	response = redirect('index')
+	request.session.clear()
+	response.delete_cookie('remember_me_token')
+	return response
 
 @login_required
 def profile(request):
@@ -148,10 +253,12 @@ def profile(request):
 			user_profile.postal_code = postal_code
 
 			user_profile.save()
-			return render(request, 'myapp/home/profile.html', {'edit_form': edit_form, 'user_profile': user_profile})
+			return render(request, 'myapp/home/profile.html', {'friend_notice': FriendsUser.objects.filter(access='unconfirm', user_receiver = request.user),'about_me': UserProfile.objects.get(username=request.user).about_me, 'edit_form': edit_form, 'user_profile': user_profile,
+				"message_notice": MessageChat.objects.filter(Q(user1_search = User.objects.get(username = request.user.username), is_read_num_user2__gt=0) | Q(user2_search = User.objects.get(username = request.user.username), is_read_num_user1__gt=0))})
 	else:
 		edit_form=ProfileEditForm()
-	return render(request, 'myapp/home/profile.html', {'edit_form': edit_form, 'user_profile': user_profile})
+	return render(request, 'myapp/home/profile.html', {'friend_notice': FriendsUser.objects.filter(access='unconfirm', user_receiver = request.user),'about_me': UserProfile.objects.get(username=request.user).about_me, 'edit_form': edit_form, 'user_profile': user_profile,
+	"message_notice": MessageChat.objects.filter(Q(user1_search = User.objects.get(username = request.user.username), is_read_num_user2__gt=0) | Q(user2_search = User.objects.get(username = request.user.username), is_read_num_user1__gt=0))})
 
 @login_required
 def create_finance_settlement(request):
@@ -197,12 +304,13 @@ def create_finance_settlement(request):
 	else:
 		form = FormCreateSettlement()
 		formset = InfiniteInputFormSet(queryset=OperatingExpens.objects.none())
-	return render(request, 'myapp/home/create_finance_settlement.html',  {'form': form, 'formset': formset})
+	return render(request, 'myapp/home/create_finance_settlement.html',  {'friend_notice': FriendsUser.objects.filter(access='unconfirm', user_receiver = request.user),'form': form, 'formset': formset,
+		"message_notice": MessageChat.objects.filter(Q(user1_search = User.objects.get(username = request.user.username), is_read_num_user2__gt=0) | Q(user2_search = User.objects.get(username = request.user.username), is_read_num_user1__gt=0))})
 
 @login_required
 def finance_tables(request):
 	financesettlement = FinanceSettlement.objects.filter(username = request.user)
-	return render(request, 'myapp/home/tables.html', {"financesettlement": financesettlement})
+	return render(request, 'myapp/home/tables.html', {'friend_notice': FriendsUser.objects.filter(access='unconfirm', user_receiver = request.user),"financesettlement": financesettlement})
 
 @login_required
 def open_finance_settlement(request, slug_financesettlement):
@@ -216,9 +324,10 @@ def open_finance_settlement(request, slug_financesettlement):
 		get_obj_avg_tn = -(get_obj_avg_net/get_obj_avg_total)*100
 	else:
 		get_obj_avg_tn = (1-(get_obj_avg_total/get_obj_avg_net))*100
-	return render(request, 'myapp/home/open_tables.html', {'get_obj': get_object_slug_financesettlement, 'get_expenses_obj': get_object_slug_financesettlement.input_values.all(),
+	return render(request, 'myapp/home/open_tables.html', {'friend_notice': FriendsUser.objects.filter(access='unconfirm', user_receiver = request.user),'get_obj': get_object_slug_financesettlement, 'get_expenses_obj': get_object_slug_financesettlement.input_values.all(),
 															 'get_obj_count': get_object_slug_financesettlement.input_values.all().count(), 'get_obj_avg': round(get_obj_avg, 2),
-															 'get_obj_avg_total_net': round(get_obj_avg_tn, 2)})
+															 'get_obj_avg_total_net': round(get_obj_avg_tn, 2),
+															 "message_notice": MessageChat.objects.filter(Q(user1_search = User.objects.get(username = request.user.username), is_read_num_user2__gt=0) | Q(user2_search = User.objects.get(username = request.user.username), is_read_num_user1__gt=0))})
 @login_required
 def delete_operating(request, element_id):
 	if request.method == 'DELETE':
@@ -242,3 +351,117 @@ def delete_table(request, element_id_table):
 			element.delete()
 			return redirect('finance_tables')
 	return redirect('index')
+
+@login_required
+def modify_table(request, slug_financesettlement):
+	element = get_object_or_404(FinanceSettlement, slug_financesettlement=slug_financesettlement)
+	InfiniteInputFormSet = modelformset_factory(OperatingExpens, extra=1, fields=('name_operating_expense', 'operating_expens'))
+	if request.method == 'POST':
+		form = FormCreateSettlement(request.POST)
+		formset = InfiniteInputFormSet(request.POST)
+		print(form.is_valid(), formset.is_valid())
+		if form.is_valid() and formset.is_valid():
+			querty_list = []
+			not_net_profit = 0
+			user = User.objects.get(username=request.user.username)
+
+			financial_identity_name = request.POST['financial_identity_name_form']
+			net_profit = request.POST['net_profit_form']
+			total_attachment = request.POST['total_attachment_form']
+
+			for f_form in formset:
+				if f_form.is_valid() and f_form.has_changed():
+					f_form.username = user
+					f_form.save()
+					print(f_form.cleaned_data['operating_expens'])
+					operating_expense = OperatingExpens.objects.filter(operating_expens = f_form.cleaned_data['operating_expens'],
+																		name_operating_expense =  f_form.cleaned_data['name_operating_expense']).first()
+					if operating_expense:
+						operating_expense.username = request.user
+						operating_expense.save()
+					not_net_profit+=f_form.cleaned_data['operating_expens']
+					querty_list.append(operating_expense)
+			percent_net_profit = -(int(net_profit)/int(not_net_profit))*100
+			if int(not_net_profit)<int(net_profit):
+				percent_net_profit = (1-(int(not_net_profit)/int(net_profit)))*100
+			finance_settlement = FinanceSettlement.objects.get(
+				slug_financesettlement=element.slug_financesettlement,
+			)
+			finance_settlement.financial_identity_name = financial_identity_name
+			finance_settlement.net_profit = net_profit
+			finance_settlement.total_attachment = total_attachment
+			finance_settlement.percent_net_profit = percent_net_profit
+			finance_settlement.input_values.add(*querty_list)
+			finance_settlement.save()
+	else:
+		form = FormCreateSettlement()
+		formset = InfiniteInputFormSet(queryset=OperatingExpens.objects.none())
+	return render(request, 'myapp/home/create_finance_settlement.html',  {'friend_notice': FriendsUser.objects.filter(access='unconfirm', user_receiver = request.user),'form': form, 'formset': formset,
+		"message_notice": MessageChat.objects.filter(Q(user1_search = User.objects.get(username = request.user.username), is_read_num_user2__gt=0) | Q(user2_search = User.objects.get(username = request.user.username), is_read_num_user1__gt=0)), 'element_modify': element})
+
+@login_required
+def list_chat_box(request):
+	# users = UserProfile.objects.filter(username = request.user)
+	users = MessageChat.objects.filter(Q(user1_search = User.objects.get(username = request.user.username)) | Q(user2_search = User.objects.get(username = request.user.username)))
+	return render(request, "myapp/chat/list_chat_box.html", {'friend_notice': FriendsUser.objects.filter(access='unconfirm', user_receiver = request.user),'users': users,
+	"message_notice": MessageChat.objects.filter(Q(user1_search = User.objects.get(username = request.user.username), is_read_num_user2__gt=0) | Q(user2_search = User.objects.get(username = request.user.username), is_read_num_user1__gt=0))}) #'form_search': form, 'list_chat': list_chat
+
+
+def create_chat_or_redirect(request, slug_username):
+	user_obj = get_object_or_404(User, username=slug_username)
+	message_obj = MessageChat.objects.filter(Q(user1_search = User.objects.get(username = request.user.username), user2_search = User.objects.get(username = user_obj.username)) | Q(user1_search = User.objects.get(username = user_obj.username), user2_search = User.objects.get(username = request.user.username))).first()
+	print(message_obj)
+	if not message_obj:
+		print('ok')
+		messager1 = MessagerModel.objects.create(username = User.objects.get(username = request.user.username))
+		messager2 = MessagerModel.objects.create(username = user_obj)
+		MessagerModel.objects.create(username = request.user)
+		message = MessageChat.objects.create(user1_search = User.objects.get(username = request.user), user2_search = User.objects.get(username = user_obj.username),slug_num = generate_random_number())
+		message.user.add(messager1) 
+		message.user.add(messager2) 
+		return redirect('chat_box', slug_num = message.slug_num)
+	return redirect('chat_box', slug_num = message_obj.slug_num)
+
+@login_required
+def chat_box(request, slug_num):
+	get_obj_slug = get_object_or_404(MessageChat, slug_num=slug_num)
+	for messages in get_obj_slug.user.filter(username = get_obj_slug.user1_search):
+		if messages.username != request.user:
+			messages.is_read = True
+	if get_obj_slug.user1_search == request.user:
+		
+		get_obj_slug.is_read_num_user1 = 0
+
+	else:
+		get_obj_slug.is_read_num_user2 = 0
+	print(get_obj_slug.slug_num)
+	message_list = []
+	for messages in get_obj_slug.user.all():
+		if messages.message is not None:
+			message_list.append({messages.username: messages.message})
+
+	return render(request, "myapp/chat/chat_box.html", {'friend_notice': FriendsUser.objects.filter(access='unconfirm', user_receiver = request.user),'get_obj_slug':get_obj_slug, 'messages': get_obj_slug.user.all(),
+		"message_notice": MessageChat.objects.filter(Q(user1_search = User.objects.get(username = request.user.username), is_read_num_user2__gt=0) | Q(user2_search = User.objects.get(username = request.user.username), is_read_num_user1__gt=0))})
+
+
+# try REST API
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def change_detail_profile_api(request):
+	data = request.data
+	serializer = UserSerializer(data=data)
+	if serializer.is_valid():
+		user = UserProfile.objects.get(username = User.objects.get(username = (json.loads(data['name'])).get('username_form')))
+		user.first_name = (json.loads(data['name'])).get('first_name_form')
+		user.last_name = (json.loads(data['name'])).get('last_name_form')
+		user.address = (json.loads(data['name'])).get('address_form')
+		user.city = (json.loads(data['name'])).get('city_form') 
+		user.country = (json.loads(data['name'])).get('country_form')
+		user.about_me = (json.loads(data['name'])).get('about_me_form')
+		user.save()
+		return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+# {"first_name_form": "a", "last_name_form": "a", "address_form": "a", "city_form": "a", "country_form": "a", "about_me_form": "a"}
